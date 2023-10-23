@@ -1,0 +1,4 @@
+Librerias utilizadas
+
+1.- Tkinder
+    pip install tkinter
