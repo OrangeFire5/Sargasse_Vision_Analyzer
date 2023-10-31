@@ -37,10 +37,3 @@ class FrmImagen(tk.Frame):
         self.btnAbrirImagen =  tk.Button(self)
         self.btnAbrirImagen.config(text="Seleccione una imagen")
         self.btnAbrirImagen.grid(column=0,row=2,sticky="nsew", padx=20,pady=10)
-
-app = tk.Tk()
-app.title("Sargasse Vision Analyzer")
-app.geometry("800x500")
-frame1 = FrmImagen(app).grid(row=0, column=0, sticky="nsew",padx=10,pady=10)
-frame2 = FrmImagen(app).grid(row=0, column=1, sticky="nsew",padx=10,pady=10)
-app.mainloop()

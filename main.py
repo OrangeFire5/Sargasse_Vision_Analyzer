@@ -1,5 +1,5 @@
 import tkinter as tk
-from clases.ClasesUI import *
+from clases.frmImagen import *
 
 app = tk.Tk()
 app.title("Sargasse Vision Analyzer")
