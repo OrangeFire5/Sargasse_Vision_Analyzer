@@ -8,10 +8,6 @@ class FrmImagen(tk.Frame):
         self.master = master
         self.config(relief="ridge", bd=5)
 
-        master.rowconfigure(0,weight=1)
-        master.columnconfigure(0,weight=1)
-        master.columnconfigure(1,weight=1)
-
         self.rowconfigure(0,weight=5)
         self.rowconfigure(1,weight=1)
         self.rowconfigure(2,weight=1)
