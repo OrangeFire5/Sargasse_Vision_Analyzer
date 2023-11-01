@@ -1,7 +1,5 @@
 import tkinter as tk
 from tkinter import ttk
-from frmImagen import *
-from frmDatos import *
 
 class FrmTablaSelecciones(tk.Frame):
     def __init__(self, master = None):
@@ -41,25 +39,3 @@ class FrmTablaSelecciones(tk.Frame):
         self.treeview.column("choose",width=30, stretch=True)
         self.treeview.pack(fill=tk.BOTH, expand=True)
         #self.treeview.grid(column=0, row=1, columnspan=6, sticky="nsew",padx=10, pady=10)
-
-
-       
-
-
-
-app = tk.Tk()
-app.title("Sargasse Vision Analyzer")
-app.geometry("800x500")
-
-app.rowconfigure(0,weight=5)
-app.rowconfigure(1,weight=1)
-app.rowconfigure(2,weight=1)
-app.columnconfigure(0,weight=3)
-app.columnconfigure(1,weight=1)
-app.columnconfigure(2,weight=3)
-
-frame1 = FrmImagen(app).grid(row=0, column=0, sticky="nsew",padx=5,pady=5)
-frame2 = FrmImagen(app).grid(row=0, column=2, sticky="nsew",padx=5,pady=5)
-frame3 = FrmDatos(app).grid(row=1, column=0,columnspan=3, sticky="nsew",padx=5,pady=5)
-frame4 = FrmTablaSelecciones(app).grid(row=2, column=0,columnspan=2, sticky="nsew",padx=5,pady=5)
-app.mainloop()

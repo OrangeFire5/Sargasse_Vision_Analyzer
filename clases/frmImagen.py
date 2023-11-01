@@ -27,9 +27,9 @@ class FrmImagen(tk.Frame):
     def createLabel(self):
         self.lbImagen =  tk.Label(self)
         self.lbImagen.config(text="Imagen Sentinel color real")
-        self.lbImagen.grid(column=0,row=1,sticky="nsew", padx=20,pady=10)
+        self.lbImagen.grid(column=0,row=1,sticky="nsew", padx=20,pady=5, ipady=3)
 
     def createButton(self):
         self.btnAbrirImagen =  tk.Button(self)
         self.btnAbrirImagen.config(text="Seleccione una imagen")
-        self.btnAbrirImagen.grid(column=0,row=2,sticky="nsew", padx=20,pady=10)
+        self.btnAbrirImagen.grid(column=0,row=2,sticky="nsew", padx=20,pady=5, ipady=3)
