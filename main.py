@@ -2,6 +2,7 @@ import tkinter as tk
 from clases.frmImagen import *
 from clases.frmDatos import *
 from clases.frmTablaSelecciones import *
+from clases.frmBotones import *
 
 app = tk.Tk()
 app.title("Sargasse Vision Analyzer")
@@ -19,8 +20,9 @@ app.columnconfigure(5,weight=3)
 app.columnconfigure(6,weight=3)
 
 
-frame1 = FrmImagen(app).grid(row=0, column=0, columnspan=3, sticky="nsew",padx=2,pady=2)
-frame2 = FrmImagen(app).grid(row=0, column=4, columnspan=3, sticky="nsew",padx=2,pady=2)
-frame3 = FrmDatos(app).grid(row=1, column=0,columnspan=7, sticky="nsew",padx=2,pady=2)
-frame4 = FrmTablaSelecciones(app).grid(row=2, column=0,columnspan=6, sticky="nsew",padx=2,pady=2)
+frameImagen1 = FrmImagen(app).grid(row=0, column=0, columnspan=3, sticky="nsew",padx=2,pady=2)
+frameImagen2 = FrmImagen(app).grid(row=0, column=4, columnspan=3, sticky="nsew",padx=2,pady=2)
+frameDatos = FrmDatos(app).grid(row=1, column=0,columnspan=7, sticky="nsew",padx=2,pady=2)
+frameTablaSelecciones = FrmTablaSelecciones(app).grid(row=2, column=0,columnspan=6, sticky="nsew",padx=2,pady=2)
+frameBotones = FrmBotones(app).grid(row=2, column=6, sticky="nsew",padx=2,pady=2)
 app.mainloop()
