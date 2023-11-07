@@ -1,3 +1,4 @@
+#Generacion del marco que contine a la tabla que muestra las selecciones
 import tkinter as tk
 from tkinter import ttk
 

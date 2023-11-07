@@ -1,3 +1,4 @@
+#Generacion del marco para mostrar las opciones para visualizar la imagen(Zoom, ajuste y sincronizar)
 import tkinter as tk
 
 class FrmBarraDeVista(tk.Frame):
