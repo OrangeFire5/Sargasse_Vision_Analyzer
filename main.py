@@ -4,10 +4,14 @@ from clases.frmDatos import *
 from clases.frmTablaSelecciones import *
 from clases.frmBotones import *
 from clases.frmBarraDeVista import *
+from clases.barraMenu import *
 
 app = tk.Tk()
 app.title("Sargasse Vision Analyzer")
 app.geometry("800x500")
+
+#Barra de menu
+BarraDeMenu(app)
 
 app.rowconfigure(0,weight=5)
 app.rowconfigure(1,weight=1)
@@ -20,10 +24,9 @@ app.columnconfigure(4,weight=5)
 app.columnconfigure(5,weight=5)
 app.columnconfigure(6,weight=5)
 
-
 frameImagen1 = FrmImagen(app).grid(row=0, column=0, columnspan=3, sticky="nsew",padx=2,pady=2)
 frameBarraDeVista = FrmBarraDeVista(app).grid(row=0, column=3, sticky="n")
-frameImagen2 = FrmImagen(app,True).grid(row=0, column=4, columnspan=3, sticky="nsew",padx=2,pady=2)
+frameImagen2 = FrmImagen(app,True,"img/imgProcesada.png").grid(row=0, column=4, columnspan=3, sticky="nsew",padx=2,pady=2)
 frameDatos = FrmDatos(app).grid(row=1, column=0,columnspan=7, sticky="nsew",padx=2,pady=2)
 frameTablaSelecciones = FrmTablaSelecciones(app).grid(row=2, column=0,columnspan=6, sticky="nsew",padx=2,pady=2)
 frameBotones = FrmBotones(app).grid(row=2, column=6, sticky="nsew",padx=2,pady=2)
