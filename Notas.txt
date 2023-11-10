@@ -2,3 +2,5 @@ Librerias utilizadas
 
 1.- Tkinder
     pip install tkinter
+2.-Pillow
+    pip install pillow

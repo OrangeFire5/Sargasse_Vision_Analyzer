@@ -26,7 +26,7 @@ class FrmImagen(tk.Frame):
             self.createCuadroClasificador() 
             self.ocultarCuadroClasificador()
 
-
+##Creacion de elementos de la Ul##
     def createIcono(self,image):
         path = os.path.dirname(__file__)
         path = os.path.dirname(path)
@@ -84,12 +84,14 @@ class FrmImagen(tk.Frame):
         tk.Label(self.cuadroClasificador,text="F+").grid(column=2,row=0,sticky="nsew")
         self.radio3 = tk.Radiobutton(self.cuadroClasificador,variable=self.tipoDeSeleccion, value=2)
         self.radio3.grid(column=2,row=1,sticky="nsew")
+
+##Funcionalidades##
     
-    #Funcionalidades
     def ocultarCuadroClasificador(self):
         self.cuadroClasificador.grid_forget()
     def mostrarCuadroClasificador(self):
         self.cuadroClasificador.grid()
+    #Abre una imagen
     def AbrirImagen(self):
         filtros=(("Imagenes", ("*.png","*.jpg","*.tif","*.ico")), ("Todos los archivos", "*.*"))
         filename = filedialog.askopenfilename(filetypes=filtros, title="Abrir Imagen")
@@ -101,7 +103,7 @@ class FrmImagen(tk.Frame):
             self.imgenOriginal = Image.open(filename)
             self.AjustarImagen()
             self.bind("<Configure>",self.AjustarPanelImagen)
-            print(filename)
+    #Ajusta tamaño de la imagen de acuerdo al tamaño de la ventana
     def AjustarPanelImagen(self,event):
         if (self.ancho != self.winfo_width()) or (self.alto  != self.winfo_height()):
             self.AjustarImagen()
