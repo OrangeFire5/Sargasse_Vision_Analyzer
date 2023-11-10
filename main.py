@@ -9,6 +9,7 @@ from clases.barraMenu import *
 app = tk.Tk()
 app.title("Sargasse Vision Analyzer")
 app.geometry("800x500")
+app.iconbitmap("img/icon.ico")
 
 #Barra de menu
 BarraDeMenu(app)
