@@ -6,7 +6,7 @@ from tkinter import filedialog
 
 class FrmImagen(tk.Frame):
     def __init__(self, master = None, barraSelecciones = False, image = "imgBruta.png"):
-        super().__init__(master,bg="green")
+        super().__init__(master)
         self.master = master
         self.ancho = self.winfo_width()
         self.alto = self.winfo_height()

@@ -3,7 +3,7 @@ import tkinter as tk
 
 class FrmDatos(tk.Frame):
     def __init__(self, master = None):
-        super().__init__(master,bg="yellow")
+        super().__init__(master)
         self.master = master
         self.config(relief="ridge", bd=5)
 

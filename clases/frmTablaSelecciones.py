@@ -4,7 +4,7 @@ from tkinter import ttk
 
 class FrmTablaSelecciones(tk.Frame):
     def __init__(self, master = None):
-        super().__init__(master,bg="blue")
+        super().__init__(master)
         self.master = master
         self.config(relief="ridge", bd=5)
 

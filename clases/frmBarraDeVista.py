@@ -3,7 +3,7 @@ import tkinter as tk
 
 class FrmBarraDeVista(tk.Frame):
     def __init__(self, master = None):
-        super().__init__(master,bg="gray",width=30, height=100)
+        super().__init__(master,width=30, height=100)
         self.master = master
         self.config(relief="ridge", bd=2)
         self.crearBotones()
