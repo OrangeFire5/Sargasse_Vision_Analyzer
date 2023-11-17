@@ -2,7 +2,10 @@
 import tkinter as tk
 import os
 from PIL import ImageTk, Image
+import matplotlib.image as mpimg
 from tkinter import filedialog
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.figure import Figure
 
 class FrmImagen(tk.Frame):
     def __init__(self, master = None, barraSelecciones = False, image = "imgBruta.png"):
@@ -99,17 +102,51 @@ class FrmImagen(tk.Frame):
             self.lbImagen.grid_forget()
             self.btnAbrirImagen.grid_forget()
             self.contenedorImage.grid_forget()
+            self.contenedorImage.config()
             self.contenedorImage.place(relx=0,rely=0,relwidth=1,relheight=1)
-            self.imgenOriginal = Image.open(filename)
-            self.AjustarImagen()
-            self.bind("<Configure>",self.AjustarPanelImagen)
-    #Ajusta tamaño de la imagen de acuerdo al tamaño de la ventana
-    def AjustarPanelImagen(self,event):
-        if (self.ancho != self.winfo_width()) or (self.alto  != self.winfo_height()):
-            self.AjustarImagen()
-    def AjustarImagen(self):
-            self.ancho = self.winfo_width()
-            self.alto = self.winfo_height()
-            self.image = ImageTk.PhotoImage(self.imgenOriginal.resize((self.ancho,self.alto)))
-            self.contenedorImage.config(image=self.image)
+            
+            self.image = Image.open(filename)
+            
+            # Crear la figura de Matplotlib
+            self.fig = Figure()
+            self.ax = self.fig.add_subplot(111)
+            # Mostrar la imagen en la gráfica
+            self.anchoImagen, self.altoImagen = self.image.size
+            self.ax.set_xlim(0,self.anchoImagen)
+            self.ax.set_ylim(self.altoImagen, 0)
+            self.ax.set_adjustable("datalim")
+            self.ax.set_position([0, 0, 1, 1])
+            self.ax.margins(0.5)
+            self.ax.use_sticky_edges = False;
+            self.ax.axis("off")#Deshabilita los ejes
+            self.ax.imshow(self.image)
+            
+            # Crear un lienzo de Matplotlib en el frame
+            self.canvas = FigureCanvasTkAgg(self.fig, master=self.contenedorImage)
+
+            #Inicio creacion de barra de herramientas
+            #self.toolbar = NavigationToolbar2Tk(self.canvas, self.contenedorImage, pack_toolbar=True)
+            #self.toolbar.update()
+            #self.toolbar.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+            #Fin de Creacion de barra de herramientas
+            self.canvas_widget = self.canvas.get_tk_widget()
+            self.canvas_widget.pack(fill=tk.BOTH, expand=True)
+            self.canvas_widget.bind("<MouseWheel>", self.zoomRuedaRaton)
+            self.canvas.mpl_connect("motion_notify_event", self.CoordenadasImagen)
+    def CoordenadasImagen(self, event):
+        # Obtener las coordenadas del puntero
+        self.x = int(event.xdata) if event.xdata is not None  else None
+        self.y = int(event.ydata) if event.ydata is not None else None
+        # Mostrar las coordenadas en la consola
+        print(f"Coordenadas del puntero: ({self.x}, {self.y})")
+    def zoomRuedaRaton(self, event):
+        # Obtener el factor de zoom
+        zoom_factor = 1.2 if event.delta <= 0 else (1/1.2)
+        # Obtener las coordenadas del evento
+        x, y = self.x, self.y
+        # Realizar el zoom
+        self.ax.set_xlim(x - (x - self.ax.get_xlim()[0]) * zoom_factor, x + (self.ax.get_xlim()[1] - x) * zoom_factor)
+        self.ax.set_ylim(y - (y - self.ax.get_ylim()[0]) * zoom_factor, y + (self.ax.get_ylim()[1] - y) * zoom_factor)
+        # Redibujar la figura
+        self.canvas.draw()
         
