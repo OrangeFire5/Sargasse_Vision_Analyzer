@@ -4,3 +4,11 @@ Librerias utilizadas
     pip install tkinter
 2.-Pillow
     pip install pillow
+3.-Matplotlib
+    pip install Matplotlib
+4.-numpy
+    pip install numpy
+4.-Rasterio
+    pip install rasterio
+5.-pyproj
+    pip install pyproj
