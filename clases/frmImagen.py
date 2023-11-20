@@ -8,7 +8,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 
 class FrmImagen(tk.Frame):
-    def __init__(self, master = None, barraSelecciones = False, image = "imgBruta.png"):
+    def __init__(self, master = None, barraSelecciones = False, image = "imgColorReal.png"):
         super().__init__(master)
         self.master = master
         self.ancho = self.winfo_width()
@@ -34,9 +34,10 @@ class FrmImagen(tk.Frame):
         path = os.path.dirname(__file__)
         path = os.path.dirname(path)
         path = os.path.join(path,"img")
+        path = os.path.join(path,"iconos")
         path = os.path.join(path,image)
 
-        self.imgenOriginal = Image.open(path)
+        self.imgenOriginal = Image.open(path).resize((125,125))
         self.image = ImageTk.PhotoImage(self.imgenOriginal)
         self.contenedorImage =  tk.Label(self, image=self.image)
         self.contenedorImage.grid(column=0,row=0,sticky="nsew")
@@ -55,18 +56,32 @@ class FrmImagen(tk.Frame):
         self.BarraSelecciones = tk.Frame(self)
         self.BarraSelecciones.config(background="gray",width=30, height=100,relief="ridge", bd=2)
         self.BarraSelecciones.grid(column=0,row=0,sticky="ne")
-        
+        #Rutas
+        path = os.path.dirname(__file__)
+        path = os.path.dirname(path)
+        path = os.path.join(path,"img")
+        path = os.path.join(path,"iconos")
+
+        #Puntero
+        icono = Image.open(os.path.join(path,"puntero.png")).resize((15,15))
+        self.iconPuntero = ImageTk.PhotoImage(icono)
         self.btnPuntero = tk.Button(self.BarraSelecciones)
-        self.btnPuntero.config(text="Point")
+        self.btnPuntero.config(image=self.iconPuntero)
         self.btnPuntero.place(relx=0.06, rely=0.0625, relwidth=0.9,relheight=0.25)
 
+        #Hand
+        icono = Image.open(os.path.join(path,"hand.png")).resize((15,15))
+        self.iconHand = ImageTk.PhotoImage(icono)
         self.btnHand = tk.Button(self.BarraSelecciones)
-        self.btnHand.config(text="Hand")
+        self.btnHand.config(image=self.iconHand)
         self.btnHand.place(relx=0.06, rely=0.375,relwidth=0.9,relheight=0.25)
 
-        self.btnAjusteVista = tk.Button(self.BarraSelecciones)
-        self.btnAjusteVista.config(text="Area")
-        self.btnAjusteVista.place(relx=0.06, rely=0.6875,relwidth=0.9,relheight=0.25)
+        #Area
+        icono = Image.open(os.path.join(path,"ajuste.ico")).resize((15,15))
+        self.iconArea = ImageTk.PhotoImage(icono)
+        self.btnArea = tk.Button(self.BarraSelecciones)
+        self.btnArea.config(text="Area")
+        self.btnArea.place(relx=0.06, rely=0.6875,relwidth=0.9,relheight=0.25)
     
     def createCuadroClasificador(self):
         self.cuadroClasificador = tk.Frame(self)
