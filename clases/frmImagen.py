@@ -53,6 +53,7 @@ class FrmImagen(tk.Frame):
         self.btnAbrirImagen.grid(column=0,row=2,sticky="nsew", padx=20,pady=5, ipady=3)
     
     def createBarraSelecciones(self):
+        self.herramientaSeleccionada = ""
         self.BarraSelecciones = tk.Frame(self)
         self.BarraSelecciones.config(background="gray",width=30, height=100,relief="ridge", bd=2)
         self.BarraSelecciones.grid(column=0,row=0,sticky="ne")
@@ -62,18 +63,18 @@ class FrmImagen(tk.Frame):
         path = os.path.join(path,"img")
         path = os.path.join(path,"iconos")
 
-        #Puntero
+        #Puntero - 0
         icono = Image.open(os.path.join(path,"puntero.png")).resize((15,15))
         self.iconPuntero = ImageTk.PhotoImage(icono)
         self.btnPuntero = tk.Button(self.BarraSelecciones)
         self.btnPuntero.config(image=self.iconPuntero)
         self.btnPuntero.place(relx=0.06, rely=0.04, relwidth=0.9,relheight=0.20)
         
-        #Hand
+        #Hand - 1
         icono = Image.open(os.path.join(path,"hand.png")).resize((15,15))
         self.iconHand = ImageTk.PhotoImage(icono)
         self.btnHand = tk.Button(self.BarraSelecciones)
-        self.btnHand.config(image=self.iconHand)
+        self.btnHand.config(image=self.iconHand,command=self.handTool)
         self.btnHand.place(relx=0.06, rely=0.28,relwidth=0.9,relheight=0.20)
 
         #Ajustar vista
@@ -83,7 +84,7 @@ class FrmImagen(tk.Frame):
         self.btnAjusteVista.config(image=self.iconAjusteVista, command=self.ajustarVista)
         self.btnAjusteVista.place(relx=0.06, rely=0.52,relwidth=0.9,relheight=0.20)
 
-        #Area
+        #Area -2
         icono = Image.open(os.path.join(path,"ajuste.ico")).resize((15,15))
         self.iconArea = ImageTk.PhotoImage(icono)
         self.btnArea = tk.Button(self.BarraSelecciones)
@@ -160,6 +161,7 @@ class FrmImagen(tk.Frame):
             self.canvas_widget.bind("<MouseWheel>", self.zoomRuedaRaton)
             self.canvas.mpl_connect("motion_notify_event", self.CoordenadasImagen)
             self.mostrarBarraSelecciones()
+            self.handTool()
     def CoordenadasImagen(self, event):
         # Obtener las coordenadas del puntero
         self.x = int(event.xdata) if event.xdata is not None  else None
@@ -180,4 +182,31 @@ class FrmImagen(tk.Frame):
         self.ax.set_xlim(0,self.anchoImagen)
         self.ax.set_ylim(self.altoImagen, 0)
         self.canvas.draw()
+    def click(self, event):
+        self.x= event.x
+        self.y= event.y
+    def arrastre(self, event):   
+        x= event.x
+        y= event.y
+        factor_x = (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])/self.canvas.get_width_height()[0]
+        factor_y = (self.ax.get_ylim()[0] - self.ax.get_ylim()[1])/self.canvas.get_width_height()[1]
+        self.ax.set_xlim(self.ax.get_xlim()[0]-((x - self.x)*factor_x) ,self.ax.get_xlim()[1]-((x - self.x)*factor_x))
+        self.ax.set_ylim(self.ax.get_ylim()[0]-((y - self.y)*factor_y) ,self.ax.get_ylim()[1]-((y - self.y)*factor_y))
+        self.x= x
+        self.y= y
+        self.canvas.draw()
+    def handTool(self):
+        if self.herramientaSeleccionada == "Hand":
+            self.canvas_widget.unbind("<ButtonPress-1>")
+            self.canvas_widget.unbind("<B1-Motion>")
+            self.btnHand.config(bg="#f0f0f0")
+            self.config(cursor="arrow")
+            self.herramientaSeleccionada = ""
+        else:
+            
+            self.canvas_widget.bind("<ButtonPress-1>", self.click)
+            self.canvas_widget.bind("<B1-Motion>", self.arrastre)
+            self.btnHand.config(bg="#8a989a")
+            self.config(cursor="hand2")
+            self.herramientaSeleccionada ="Hand"
         
