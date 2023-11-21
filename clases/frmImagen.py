@@ -8,7 +8,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 
 class FrmImagen(tk.Frame):
-    def __init__(self, master = None, barraSelecciones = False, image = "imgColorReal.png"):
+    def __init__(self, master = None, textoLabel = "Imagen Sentinel a color real", image = "imgColorReal.png"):
         super().__init__(master)
         self.master = master
         self.ancho = self.winfo_width()
@@ -23,11 +23,11 @@ class FrmImagen(tk.Frame):
         self.createIcono(image)
         self.createLabel()
         self.createButton()
-        if barraSelecciones:
-            self.createBarraSelecciones()
-            self.lbImagen.config(text="Imagen Sentinel procesada")
-            self.createCuadroClasificador() 
-            self.ocultarCuadroClasificador()
+        self.createBarraSelecciones()
+        self.ocultarBarraSelecciones()
+        self.lbImagen.config(text=textoLabel)
+        self.createCuadroClasificador() 
+        self.ocultarCuadroClasificador()
 
 ##Creacion de elementos de la Ul##
     def createIcono(self,image):
@@ -44,7 +44,7 @@ class FrmImagen(tk.Frame):
 
     def createLabel(self):
         self.lbImagen =  tk.Label(self)
-        self.lbImagen.config(text="Imagen Sentinel a color real")
+        #self.lbImagen.config()
         self.lbImagen.grid(column=0,row=1,sticky="nsew", padx=20,pady=5, ipady=3)
 
     def createButton(self):
@@ -67,21 +67,28 @@ class FrmImagen(tk.Frame):
         self.iconPuntero = ImageTk.PhotoImage(icono)
         self.btnPuntero = tk.Button(self.BarraSelecciones)
         self.btnPuntero.config(image=self.iconPuntero)
-        self.btnPuntero.place(relx=0.06, rely=0.0625, relwidth=0.9,relheight=0.25)
-
+        self.btnPuntero.place(relx=0.06, rely=0.04, relwidth=0.9,relheight=0.20)
+        
         #Hand
         icono = Image.open(os.path.join(path,"hand.png")).resize((15,15))
         self.iconHand = ImageTk.PhotoImage(icono)
         self.btnHand = tk.Button(self.BarraSelecciones)
         self.btnHand.config(image=self.iconHand)
-        self.btnHand.place(relx=0.06, rely=0.375,relwidth=0.9,relheight=0.25)
+        self.btnHand.place(relx=0.06, rely=0.28,relwidth=0.9,relheight=0.20)
+
+        #Ajustar vista
+        icono = Image.open(os.path.join(path,"ajuste.ico")).resize((15,15))
+        self.iconAjusteVista = ImageTk.PhotoImage(icono)
+        self.btnAjusteVista = tk.Button(self.BarraSelecciones)
+        self.btnAjusteVista.config(image=self.iconAjusteVista, command=self.ajustarVista)
+        self.btnAjusteVista.place(relx=0.06, rely=0.52,relwidth=0.9,relheight=0.20)
 
         #Area
         icono = Image.open(os.path.join(path,"ajuste.ico")).resize((15,15))
         self.iconArea = ImageTk.PhotoImage(icono)
         self.btnArea = tk.Button(self.BarraSelecciones)
         self.btnArea.config(text="Area")
-        self.btnArea.place(relx=0.06, rely=0.6875,relwidth=0.9,relheight=0.25)
+        self.btnArea.place(relx=0.06, rely=0.76,relwidth=0.9,relheight=0.20)
     
     def createCuadroClasificador(self):
         self.cuadroClasificador = tk.Frame(self)
@@ -104,11 +111,15 @@ class FrmImagen(tk.Frame):
         self.radio3.grid(column=2,row=1,sticky="nsew")
 
 ##Funcionalidades##
-    
-    def ocultarCuadroClasificador(self):
-        self.cuadroClasificador.grid_forget()
     def mostrarCuadroClasificador(self):
         self.cuadroClasificador.grid()
+    def ocultarCuadroClasificador(self):
+        self.cuadroClasificador.grid_forget()
+    def mostrarBarraSelecciones(self):
+        self.BarraSelecciones.grid(column=0,row=0,sticky="ne")
+    def ocultarBarraSelecciones(self):
+        self.BarraSelecciones.grid_forget()
+
     #Abre una imagen
     def AbrirImagen(self):
         filtros=(("Imagenes", ("*.png","*.jpg","*.tif","*.ico")), ("Todos los archivos", "*.*"))
@@ -148,6 +159,7 @@ class FrmImagen(tk.Frame):
             self.canvas_widget.pack(fill=tk.BOTH, expand=True)
             self.canvas_widget.bind("<MouseWheel>", self.zoomRuedaRaton)
             self.canvas.mpl_connect("motion_notify_event", self.CoordenadasImagen)
+            self.mostrarBarraSelecciones()
     def CoordenadasImagen(self, event):
         # Obtener las coordenadas del puntero
         self.x = int(event.xdata) if event.xdata is not None  else None
@@ -163,5 +175,9 @@ class FrmImagen(tk.Frame):
         self.ax.set_xlim(x - (x - self.ax.get_xlim()[0]) * zoom_factor, x + (self.ax.get_xlim()[1] - x) * zoom_factor)
         self.ax.set_ylim(y - (y - self.ax.get_ylim()[0]) * zoom_factor, y + (self.ax.get_ylim()[1] - y) * zoom_factor)
         # Redibujar la figura
+        self.canvas.draw()
+    def ajustarVista(self):
+        self.ax.set_xlim(0,self.anchoImagen)
+        self.ax.set_ylim(self.altoImagen, 0)
         self.canvas.draw()
         
