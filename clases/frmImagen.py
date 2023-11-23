@@ -21,12 +21,12 @@ class FrmImagen(tk.Frame):
         self.columnconfigure(0,weight=1)
 
         self.createIcono(image)
-        self.createLabel()
+        self.createLabel(textoLabel)
         self.createButton()
         self.createBarraSelecciones()
-        self.ocultarBarraSelecciones()
-        self.lbImagen.config(text=textoLabel)
         self.createCuadroClasificador() 
+        
+        self.ocultarBarraSelecciones()
         self.ocultarCuadroClasificador()
 
 ##Creacion de elementos de la Ul##
@@ -37,14 +37,14 @@ class FrmImagen(tk.Frame):
         path = os.path.join(path,"iconos")
         path = os.path.join(path,image)
 
-        self.imgenOriginal = Image.open(path).resize((125,125))
+        self.imgenOriginal = Image.open(path).resize((100,100))
         self.image = ImageTk.PhotoImage(self.imgenOriginal)
         self.contenedorImage =  tk.Label(self, image=self.image)
         self.contenedorImage.grid(column=0,row=0,sticky="nsew")
 
-    def createLabel(self):
+    def createLabel(self, textoLabel):
         self.lbImagen =  tk.Label(self)
-        #self.lbImagen.config()
+        self.lbImagen.config(text=textoLabel)
         self.lbImagen.grid(column=0,row=1,sticky="nsew", padx=20,pady=5, ipady=3)
 
     def createButton(self):
@@ -55,8 +55,9 @@ class FrmImagen(tk.Frame):
     def createBarraSelecciones(self):
         self.herramientaSeleccionada = ""
         self.BarraSelecciones = tk.Frame(self)
-        self.BarraSelecciones.config(background="gray",width=30, height=100,relief="ridge", bd=2)
+        self.BarraSelecciones.config(background="gray",width=30, height=175,relief="ridge", bd=2)
         self.BarraSelecciones.grid(column=0,row=0,sticky="ne")
+        
         #Rutas
         path = os.path.dirname(__file__)
         path = os.path.dirname(path)
@@ -68,28 +69,49 @@ class FrmImagen(tk.Frame):
         self.iconPuntero = ImageTk.PhotoImage(icono)
         self.btnPuntero = tk.Button(self.BarraSelecciones)
         self.btnPuntero.config(image=self.iconPuntero)
-        self.btnPuntero.place(relx=0.06, rely=0.04, relwidth=0.9,relheight=0.20)
+        self.btnPuntero.place(relx=0.06, rely=0.02, relwidth=0.9,relheight=0.12)
         
         #Hand - 1
         icono = Image.open(os.path.join(path,"hand.png")).resize((15,15))
         self.iconHand = ImageTk.PhotoImage(icono)
         self.btnHand = tk.Button(self.BarraSelecciones)
         self.btnHand.config(image=self.iconHand,command=self.handTool)
-        self.btnHand.place(relx=0.06, rely=0.28,relwidth=0.9,relheight=0.20)
+        self.btnHand.place(relx=0.06, rely=0.16,relwidth=0.9,relheight=0.12)
 
-        #Ajustar vista
+        #AumentoZoom - 2
+        icono = Image.open(os.path.join(path,"zoomMas.ico")).resize((15,15))
+        self.iconAumentoZoom = ImageTk.PhotoImage(icono)
+        self.btnAumentoZoom = tk.Button(self.BarraSelecciones)
+        self.btnAumentoZoom.config(image=self.iconAumentoZoom)
+        self.btnAumentoZoom.place(relx=0.06, rely=0.3, relwidth=0.9,relheight=0.12)
+        
+        #Disminuye Zoom - 3
+        icono = Image.open(os.path.join(path,"zoomMenos.ico")).resize((15,15))
+        self.iconDisminuyeZoom = ImageTk.PhotoImage(icono)
+        self.btnDiminuyeZoom = tk.Button(self.BarraSelecciones)
+        self.btnDiminuyeZoom.config(image=self.iconDisminuyeZoom)
+        self.btnDiminuyeZoom.place(relx=0.06, rely=0.44,relwidth=0.9,relheight=0.12)
+
+        #Ajustar vista - 4
         icono = Image.open(os.path.join(path,"ajuste.ico")).resize((15,15))
         self.iconAjusteVista = ImageTk.PhotoImage(icono)
         self.btnAjusteVista = tk.Button(self.BarraSelecciones)
         self.btnAjusteVista.config(image=self.iconAjusteVista, command=self.ajustarVista)
-        self.btnAjusteVista.place(relx=0.06, rely=0.52,relwidth=0.9,relheight=0.20)
+        self.btnAjusteVista.place(relx=0.06, rely=0.58,relwidth=0.9,relheight=0.12)
 
-        #Area -2
+        #Area - 5 
         icono = Image.open(os.path.join(path,"ajuste.ico")).resize((15,15))
         self.iconArea = ImageTk.PhotoImage(icono)
         self.btnArea = tk.Button(self.BarraSelecciones)
         self.btnArea.config(text="Area")
-        self.btnArea.place(relx=0.06, rely=0.76,relwidth=0.9,relheight=0.20)
+        self.btnArea.place(relx=0.06, rely=0.72,relwidth=0.9,relheight=0.12)
+
+        #Sincronizar imagenes - 6
+        icono = Image.open(os.path.join(path,"ajuste.ico")).resize((15,15))
+        self.iconSicronizar = ImageTk.PhotoImage(icono)
+        self.btnSincronizar = tk.Button(self.BarraSelecciones)
+        self.btnSincronizar.config(text="=")
+        self.btnSincronizar.place(relx=0.06, rely=0.86,relwidth=0.9,relheight=0.12)
     
     def createCuadroClasificador(self):
         self.cuadroClasificador = tk.Frame(self)
