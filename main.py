@@ -1,6 +1,5 @@
 import tkinter as tk
 from clases.frmImagen import *
-from clases.frmDatos import *
 from clases.frmTablaSelecciones import *
 from clases.frmBotones import *
 from clases.barraMenu import *
