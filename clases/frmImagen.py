@@ -11,10 +11,12 @@ class FrmImagen(tk.Frame):
     def __init__(self, master = None, textoLabel = "Imagen Sentinel a color real", image = "imgColorReal.png"):
         super().__init__(master)
         self.master = master
+        self.config(relief="ridge", bd=5)
         self.ancho = self.winfo_width()
         self.alto = self.winfo_height()
-        self.config(relief="ridge", bd=5)
-        
+
+        ##Configuraciones##
+        self.grid_propagate(False)
         self.rowconfigure(0,weight=5)
         self.rowconfigure(1,weight=1)
         self.rowconfigure(2,weight=1)
@@ -23,11 +25,6 @@ class FrmImagen(tk.Frame):
         self.createIcono(image)
         self.createLabel(textoLabel)
         self.createButton()
-        self.createBarraSelecciones()
-        self.createCuadroClasificador() 
-        
-        self.ocultarBarraSelecciones()
-        self.ocultarCuadroClasificador()
 
 ##Creacion de elementos de la Ul##
     def createIcono(self,image):
@@ -112,11 +109,18 @@ class FrmImagen(tk.Frame):
         self.btnSincronizar = tk.Button(self.BarraSelecciones)
         self.btnSincronizar.config(text="=")
         self.btnSincronizar.place(relx=0.06, rely=0.86,relwidth=0.9,relheight=0.12)
-    
+
+    def createEtiquetaDeDatos(self):
+        self.EtiquetaDeDatos = tk.Label(self)
+        self.datosPixel = tk.StringVar()
+        self.datosPixel.set("Value:--, Lon:--, Lat:--, x:--, y:--")
+        self.EtiquetaDeDatos.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.E)
+        self.EtiquetaDeDatos.place(relx=0, rely=0.95,relwidth=1,relheight=0.05)
+
     def createCuadroClasificador(self):
         self.cuadroClasificador = tk.Frame(self)
         self.cuadroClasificador.config(background="gray",relief="ridge", bd=2)
-        self.cuadroClasificador.grid(column=0,row=3,sticky="s")
+        self.cuadroClasificador.grid(column=0,row=3,sticky="sw")
 
         self.tipoDeSeleccion = tk.IntVar()
         self.tipoDeSeleccion.set(1)
@@ -135,14 +139,13 @@ class FrmImagen(tk.Frame):
 
 ##Funcionalidades##
     def mostrarCuadroClasificador(self):
-        self.cuadroClasificador.grid()
+        self.cuadroClasificador.grid(sticky="sw")
     def ocultarCuadroClasificador(self):
         self.cuadroClasificador.grid_forget()
     def mostrarBarraSelecciones(self):
         self.BarraSelecciones.grid(column=0,row=0,sticky="ne")
     def ocultarBarraSelecciones(self):
         self.BarraSelecciones.grid_forget()
-
     #Abre una imagen
     def AbrirImagen(self):
         filtros=(("Imagenes", ("*.png","*.jpg","*.tif","*.ico")), ("Todos los archivos", "*.*"))
@@ -151,44 +154,38 @@ class FrmImagen(tk.Frame):
             self.lbImagen.grid_forget()
             self.btnAbrirImagen.grid_forget()
             self.contenedorImage.grid_forget()
-            self.contenedorImage.config()
-            self.contenedorImage.place(relx=0,rely=0,relwidth=1,relheight=1)
-            
+            self.contenedorImage.place(relx=0,rely=0,relwidth=1,relheight=0.95)
+            ##Abre imagen##
             self.image = Image.open(filename)
-            
-            # Crear la figura de Matplotlib
+            self.anchoImagen, self.altoImagen = self.image.size
+            ##Configuracion de figura de mathplotlib##
             self.fig = Figure()
             self.ax = self.fig.add_subplot(111)
-            # Mostrar la imagen en la gráfica
-            self.anchoImagen, self.altoImagen = self.image.size
-            self.ax.set_xlim(0,self.anchoImagen)
-            self.ax.set_ylim(self.altoImagen, 0)
             self.ax.set_adjustable("datalim")
             self.ax.set_position([0, 0, 1, 1])
-            self.ax.margins(0.5)
-            self.ax.use_sticky_edges = False;
-            self.ax.axis("off")#Deshabilita los ejes
-            self.ax.imshow(self.image)
-            
-            # Crear un lienzo de Matplotlib en el frame
+            self.ax.set_xlim(0,self.anchoImagen)
+            self.ax.set_ylim(self.altoImagen, 0)
+            self.ax.imshow(self.image)  
+            ## Crear un lienzo de Matplotlib en el frame##
             self.canvas = FigureCanvasTkAgg(self.fig, master=self.contenedorImage)
-
-            #Inicio creacion de barra de herramientas
-            #self.toolbar = NavigationToolbar2Tk(self.canvas, self.contenedorImage, pack_toolbar=True)
-            #self.toolbar.update()
-            #self.toolbar.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-            #Fin de Creacion de barra de herramientas
             self.canvas_widget = self.canvas.get_tk_widget()
             self.canvas_widget.pack(fill=tk.BOTH, expand=True)
             self.canvas_widget.bind("<MouseWheel>", self.zoomRuedaRaton)
             self.canvas.mpl_connect("motion_notify_event", self.CoordenadasImagen)
-            self.mostrarBarraSelecciones()
+            ##Crea elementos para trabajar la imagen##           
+            self.createBarraSelecciones()
+            self.createEtiquetaDeDatos()
+            self.createCuadroClasificador()
+            self.ocultarCuadroClasificador()
+            #self.mostrarCuadroClasificador()
+            
             self.handTool()
     def CoordenadasImagen(self, event):
         # Obtener las coordenadas del puntero
         self.x = int(event.xdata) if event.xdata is not None  else None
         self.y = int(event.ydata) if event.ydata is not None else None
         # Mostrar las coordenadas en la consola
+        self.datosPixel.set(f"Value:--, Lon:--, Lat:--, x:{self.x}, y:{self.y}")
         print(f"Coordenadas del puntero: ({self.x}, {self.y})")
     def zoomRuedaRaton(self, event):
         # Obtener el factor de zoom
@@ -224,11 +221,9 @@ class FrmImagen(tk.Frame):
             self.btnHand.config(bg="#f0f0f0")
             self.config(cursor="arrow")
             self.herramientaSeleccionada = ""
-        else:
-            
+        else:   
             self.canvas_widget.bind("<ButtonPress-1>", self.click)
             self.canvas_widget.bind("<B1-Motion>", self.arrastre)
             self.btnHand.config(bg="#8a989a")
             self.config(cursor="hand2")
             self.herramientaSeleccionada ="Hand"
-        
