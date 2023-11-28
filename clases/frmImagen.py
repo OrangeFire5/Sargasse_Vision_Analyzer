@@ -14,7 +14,7 @@ class FrmImagen(tk.Frame):
         self.config(relief="ridge", bd=5)
         self.ancho = self.winfo_width()
         self.alto = self.winfo_height()
-
+        
         ##Configuraciones##
         self.grid_propagate(False)
         self.rowconfigure(0,weight=5)
@@ -79,14 +79,14 @@ class FrmImagen(tk.Frame):
         icono = Image.open(os.path.join(path,"zoomMas.ico")).resize((15,15))
         self.iconAumentoZoom = ImageTk.PhotoImage(icono)
         self.btnAumentoZoom = tk.Button(self.BarraSelecciones)
-        self.btnAumentoZoom.config(image=self.iconAumentoZoom)
+        self.btnAumentoZoom.config(image=self.iconAumentoZoom, command=self.aumentoZoomTool)
         self.btnAumentoZoom.place(relx=0.06, rely=0.3, relwidth=0.9,relheight=0.12)
         
         #Disminuye Zoom - 3
         icono = Image.open(os.path.join(path,"zoomMenos.ico")).resize((15,15))
         self.iconDisminuyeZoom = ImageTk.PhotoImage(icono)
         self.btnDiminuyeZoom = tk.Button(self.BarraSelecciones)
-        self.btnDiminuyeZoom.config(image=self.iconDisminuyeZoom)
+        self.btnDiminuyeZoom.config(image=self.iconDisminuyeZoom, command=self.disminuyeZoomTool)
         self.btnDiminuyeZoom.place(relx=0.06, rely=0.44,relwidth=0.9,relheight=0.12)
 
         #Ajustar vista - 4
@@ -177,26 +177,33 @@ class FrmImagen(tk.Frame):
             self.createEtiquetaDeDatos()
             self.createCuadroClasificador()
             self.ocultarCuadroClasificador()
-            #self.mostrarCuadroClasificador()
-            
+            #self.mostrarCuadroClasificador()           
             self.handTool()
+
     def CoordenadasImagen(self, event):
         # Obtener las coordenadas del puntero
-        self.x = int(event.xdata) if event.xdata is not None  else None
-        self.y = int(event.ydata) if event.ydata is not None else None
+        self.x = round(event.xdata) if event.xdata is not None  else None
+        self.y = round(event.ydata) if event.ydata is not None else None
         # Mostrar las coordenadas en la consola
         self.datosPixel.set(f"Value:--, Lon:--, Lat:--, x:{self.x}, y:{self.y}")
-        print(f"Coordenadas del puntero: ({self.x}, {self.y})")
+
+    ### Inicio funciones Zoom ###
     def zoomRuedaRaton(self, event):
-        # Obtener el factor de zoom
         zoom_factor = 1.2 if event.delta <= 0 else (1/1.2)
-        # Obtener las coordenadas del evento
+        self.aplicarZoom(zoom_factor)
+    def zoomMas(self, event):
+        zoom_factor = 1/1.5
+        self.aplicarZoom(zoom_factor)
+    def zoomMenos(self, event):
+        zoom_factor = 1.5
+        self.aplicarZoom(zoom_factor)   
+    def aplicarZoom(self,zoom_factor):
         x, y = self.x, self.y
-        # Realizar el zoom
         self.ax.set_xlim(x - (x - self.ax.get_xlim()[0]) * zoom_factor, x + (self.ax.get_xlim()[1] - x) * zoom_factor)
         self.ax.set_ylim(y - (y - self.ax.get_ylim()[0]) * zoom_factor, y + (self.ax.get_ylim()[1] - y) * zoom_factor)
-        # Redibujar la figura
         self.canvas.draw()
+    ### Fin de funciones Zoom ###
+
     def ajustarVista(self):
         self.ax.set_xlim(0,self.anchoImagen)
         self.ax.set_ylim(self.altoImagen, 0)
@@ -204,6 +211,7 @@ class FrmImagen(tk.Frame):
     def click(self, event):
         self.x= event.x
         self.y= event.y
+        
     def arrastre(self, event):   
         x= event.x
         y= event.y
@@ -214,16 +222,57 @@ class FrmImagen(tk.Frame):
         self.x= x
         self.y= y
         self.canvas.draw()
+
+ ### Botones de tools ###  
     def handTool(self):
         if self.herramientaSeleccionada == "Hand":
-            self.canvas_widget.unbind("<ButtonPress-1>")
-            self.canvas_widget.unbind("<B1-Motion>")
-            self.btnHand.config(bg="#f0f0f0")
-            self.config(cursor="arrow")
-            self.herramientaSeleccionada = ""
-        else:   
-            self.canvas_widget.bind("<ButtonPress-1>", self.click)
-            self.canvas_widget.bind("<B1-Motion>", self.arrastre)
-            self.btnHand.config(bg="#8a989a")
-            self.config(cursor="hand2")
-            self.herramientaSeleccionada ="Hand"
+            self.desactivarHerramienta()
+        else:
+            self.activarHerramienta("Hand")                   
+    def aumentoZoomTool(self):
+        if self.herramientaSeleccionada == "ZoomMas":
+            self.desactivarHerramienta()
+        else:
+            self.activarHerramienta("ZoomMas")
+    def disminuyeZoomTool(self):
+        if self.herramientaSeleccionada == "ZoomMenos":
+            self.desactivarHerramienta()
+        else:
+            self.activarHerramienta("ZoomMenos")
+
+ ### Controladores de tools ###           
+    def desactivarHerramienta(self):
+        match self.herramientaSeleccionada:
+            case "Hand":
+                self.canvas_widget.unbind("<ButtonPress-1>")
+                self.canvas_widget.unbind("<B1-Motion>")
+                self.btnHand.config(bg="gray92", relief="raised")
+            case "ZoomMas":
+                self.canvas_widget.unbind("<ButtonPress-1>")
+                self.btnAumentoZoom.config(bg="gray92", relief="raised")
+            case "ZoomMenos":
+                self.canvas_widget.unbind("<ButtonPress-1>")
+                self.btnDiminuyeZoom.config(bg="gray92", relief="raised")
+            case "":
+                exit
+        self.herramientaSeleccionada = ""
+        self.config(cursor="arrow")
+    def activarHerramienta(self, herramienta):
+        self.desactivarHerramienta()
+        match herramienta:
+            case "Hand":
+                self.canvas_widget.bind("<ButtonPress-1>", self.click)
+                self.canvas_widget.bind("<B1-Motion>", self.arrastre)
+                self.btnHand.config(bg="gray40",relief="sunken")
+                self.config(cursor="hand2")
+            case "ZoomMas":
+                self.canvas_widget.bind("<ButtonPress-1>", self.zoomMas)
+                self.btnAumentoZoom.config(bg="gray40",relief="sunken")
+                self.config(cursor="plus")
+            case "ZoomMenos":
+                self.canvas_widget.bind("<ButtonPress-1>", self.zoomMenos)
+                self.btnDiminuyeZoom.config(bg="gray40",relief="sunken")
+                self.config(cursor="plus")
+            case "":
+                exit
+        self.herramientaSeleccionada = herramienta
