@@ -6,11 +6,15 @@ import matplotlib.image as mpimg
 from tkinter import filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
+#from controller import *
 
 class FrmImagen(tk.Frame):
-    def __init__(self, master = None, textoLabel = "Imagen Sentinel a color real", image = "imgColorReal.png"):
+    def __init__(self, master = None, controlador=None, nombre="", textoLabel = "Imagen Sentinel a color real", image = "imgColorReal.png"):
         super().__init__(master)
         self.master = master
+        self.controller = controlador
+        self.nombre = nombre
+        self.ImagenCargada = False
         self.config(relief="ridge", bd=5)
         self.ancho = self.winfo_width()
         self.alto = self.winfo_height()
@@ -51,6 +55,7 @@ class FrmImagen(tk.Frame):
     
     def createBarraSelecciones(self):
         self.herramientaSeleccionada = ""
+        self.sincronizar = False
         self.BarraSelecciones = tk.Frame(self)
         self.BarraSelecciones.config(background="gray",width=30, height=175,relief="ridge", bd=2)
         self.BarraSelecciones.grid(column=0,row=0,sticky="ne")
@@ -69,7 +74,7 @@ class FrmImagen(tk.Frame):
         self.btnPuntero.place(relx=0.06, rely=0.02, relwidth=0.9,relheight=0.12)
         
         #Hand - 1
-        icono = Image.open(os.path.join(path,"hand.png")).resize((15,15))
+        icono = Image.open(os.path.join(path,"hand.png")).resize((16,16))
         self.iconHand = ImageTk.PhotoImage(icono)
         self.btnHand = tk.Button(self.BarraSelecciones)
         self.btnHand.config(image=self.iconHand,command=self.handTool)
@@ -107,7 +112,7 @@ class FrmImagen(tk.Frame):
         icono = Image.open(os.path.join(path,"ajuste.ico")).resize((15,15))
         self.iconSicronizar = ImageTk.PhotoImage(icono)
         self.btnSincronizar = tk.Button(self.BarraSelecciones)
-        self.btnSincronizar.config(text="=")
+        self.btnSincronizar.config(text="=", command=self.sincronizarTool)
         self.btnSincronizar.place(relx=0.06, rely=0.86,relwidth=0.9,relheight=0.12)
 
     def createEtiquetaDeDatos(self):
@@ -172,13 +177,15 @@ class FrmImagen(tk.Frame):
             self.canvas_widget.pack(fill=tk.BOTH, expand=True)
             self.canvas_widget.bind("<MouseWheel>", self.zoomRuedaRaton)
             self.canvas.mpl_connect("motion_notify_event", self.CoordenadasImagen)
-            ##Crea elementos para trabajar la imagen##           
+            ##Crea elementos para trabajar la imagen##
+            self.ImagenCargada=True        
             self.createBarraSelecciones()
             self.createEtiquetaDeDatos()
             self.createCuadroClasificador()
             self.ocultarCuadroClasificador()
             #self.mostrarCuadroClasificador()           
             self.handTool()
+
 
     def CoordenadasImagen(self, event):
         # Obtener las coordenadas del puntero
@@ -199,15 +206,22 @@ class FrmImagen(tk.Frame):
         self.aplicarZoom(zoom_factor)   
     def aplicarZoom(self,zoom_factor):
         x, y = self.x, self.y
-        self.ax.set_xlim(x - (x - self.ax.get_xlim()[0]) * zoom_factor, x + (self.ax.get_xlim()[1] - x) * zoom_factor)
-        self.ax.set_ylim(y - (y - self.ax.get_ylim()[0]) * zoom_factor, y + (self.ax.get_ylim()[1] - y) * zoom_factor)
+        limX = (x - (x - self.ax.get_xlim()[0]) * zoom_factor, x + (self.ax.get_xlim()[1] - x) * zoom_factor)
+        limY = (y - (y - self.ax.get_ylim()[0]) * zoom_factor, y + (self.ax.get_ylim()[1] - y) * zoom_factor)
+        self.ax.set_xlim(limX)
+        self.ax.set_ylim(limY)
+        if self.sincronizar:
+            self.controller.ajustarVista(self.nombre,limX,limY)
         self.canvas.draw()
     ### Fin de funciones Zoom ###
 
     def ajustarVista(self):
         self.ax.set_xlim(0,self.anchoImagen)
         self.ax.set_ylim(self.altoImagen, 0)
+        if self.sincronizar:
+            self.controller.aplicarAjuste(self.nombre)
         self.canvas.draw()
+
     def click(self, event):
         self.x= event.x
         self.y= event.y
@@ -217,10 +231,14 @@ class FrmImagen(tk.Frame):
         y= event.y
         factor_x = (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])/self.canvas.get_width_height()[0]
         factor_y = (self.ax.get_ylim()[0] - self.ax.get_ylim()[1])/self.canvas.get_width_height()[1]
-        self.ax.set_xlim(self.ax.get_xlim()[0]-((x - self.x)*factor_x) ,self.ax.get_xlim()[1]-((x - self.x)*factor_x))
-        self.ax.set_ylim(self.ax.get_ylim()[0]-((y - self.y)*factor_y) ,self.ax.get_ylim()[1]-((y - self.y)*factor_y))
+        limX=(self.ax.get_xlim()[0]-((x - self.x)*factor_x) ,self.ax.get_xlim()[1]-((x - self.x)*factor_x))
+        limY=(self.ax.get_ylim()[0]-((y - self.y)*factor_y) ,self.ax.get_ylim()[1]-((y - self.y)*factor_y))
+        self.ax.set_xlim(limX)
+        self.ax.set_ylim(limY)
         self.x= x
         self.y= y
+        if self.sincronizar:
+            self.controller.ajustarVista(self.nombre,limX,limY)
         self.canvas.draw()
 
  ### Botones de tools ###  
@@ -239,6 +257,15 @@ class FrmImagen(tk.Frame):
             self.desactivarHerramienta()
         else:
             self.activarHerramienta("ZoomMenos")
+    def sincronizarTool(self):
+        if self.controller.existeImagenEnOtroFrame(self.nombre):
+            if self.sincronizar:
+                self.btnSincronizar.config(bg="gray92", relief="raised")
+                self.sincronizar = False
+            else:
+                self.btnSincronizar.config(bg="gray40",relief="sunken")
+                self.sincronizar = True
+            self.controller.sincronizarTool(self.nombre)
 
  ### Controladores de tools ###           
     def desactivarHerramienta(self):
@@ -250,6 +277,9 @@ class FrmImagen(tk.Frame):
             case "ZoomMas":
                 self.canvas_widget.unbind("<ButtonPress-1>")
                 self.btnAumentoZoom.config(bg="gray92", relief="raised")
+            case "ZoomMenos":
+                self.canvas_widget.unbind("<ButtonPress-1>")
+                self.btnDiminuyeZoom.config(bg="gray92", relief="raised")
             case "ZoomMenos":
                 self.canvas_widget.unbind("<ButtonPress-1>")
                 self.btnDiminuyeZoom.config(bg="gray92", relief="raised")
