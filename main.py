@@ -8,7 +8,7 @@ from clases.controller import *
 app = tk.Tk()
 app.title("Sargasse Vision Analyzer")
 app.geometry("800x500")
-app.iconbitmap("img/icon.ico")
+app.iconbitmap("img/iconos/icon.ico")
 
 #Barra de menu
 BarraDeMenu(app)
@@ -26,7 +26,7 @@ controlador = Controller(app)
 
 frameImagen1 = FrmImagen(app,controlador,"FrameImagen1")
 frameImagen1.grid(row=0, column=0, columnspan=3, sticky="nsew",padx=2,pady=2)
-frameImagen2 = FrmImagen(app,controlador,"FrameImagen2","Imagen Sentinel procesada","imgProcesada.ico")
+frameImagen2 = FrmImagen(app,controlador,"FrameImagen2","Imagen Sentinel procesada","imgProcesada.png")
 frameImagen2.grid(row=0, column=3, columnspan=3, sticky="nsew",padx=2,pady=2)
 frameTablaSelecciones = FrmTablaSelecciones(app).grid(row=1, column=0,columnspan=5, sticky="nsew",padx=2,pady=2)
 frameBotones = FrmBotones(app).grid(row=1, column=5, sticky="nsew",padx=2,pady=2)

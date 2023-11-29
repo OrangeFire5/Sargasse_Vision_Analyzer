@@ -74,45 +74,45 @@ class FrmImagen(tk.Frame):
         self.btnPuntero.place(relx=0.06, rely=0.02, relwidth=0.9,relheight=0.12)
         
         #Hand - 1
-        icono = Image.open(os.path.join(path,"hand.png")).resize((16,16))
+        icono = Image.open(os.path.join(path,"hand.png")).resize((15,15))
         self.iconHand = ImageTk.PhotoImage(icono)
         self.btnHand = tk.Button(self.BarraSelecciones)
         self.btnHand.config(image=self.iconHand,command=self.handTool)
         self.btnHand.place(relx=0.06, rely=0.16,relwidth=0.9,relheight=0.12)
 
         #AumentoZoom - 2
-        icono = Image.open(os.path.join(path,"zoomMas.ico")).resize((15,15))
+        icono = Image.open(os.path.join(path,"zoomMas.png")).resize((15,15))
         self.iconAumentoZoom = ImageTk.PhotoImage(icono)
         self.btnAumentoZoom = tk.Button(self.BarraSelecciones)
         self.btnAumentoZoom.config(image=self.iconAumentoZoom, command=self.aumentoZoomTool)
         self.btnAumentoZoom.place(relx=0.06, rely=0.3, relwidth=0.9,relheight=0.12)
         
         #Disminuye Zoom - 3
-        icono = Image.open(os.path.join(path,"zoomMenos.ico")).resize((15,15))
+        icono = Image.open(os.path.join(path,"zoomMenos.png")).resize((15,15))
         self.iconDisminuyeZoom = ImageTk.PhotoImage(icono)
         self.btnDiminuyeZoom = tk.Button(self.BarraSelecciones)
         self.btnDiminuyeZoom.config(image=self.iconDisminuyeZoom, command=self.disminuyeZoomTool)
         self.btnDiminuyeZoom.place(relx=0.06, rely=0.44,relwidth=0.9,relheight=0.12)
 
         #Ajustar vista - 4
-        icono = Image.open(os.path.join(path,"ajuste.ico")).resize((15,15))
+        icono = Image.open(os.path.join(path,"ajuste.png")).resize((15,15))
         self.iconAjusteVista = ImageTk.PhotoImage(icono)
         self.btnAjusteVista = tk.Button(self.BarraSelecciones)
         self.btnAjusteVista.config(image=self.iconAjusteVista, command=self.ajustarVista)
         self.btnAjusteVista.place(relx=0.06, rely=0.58,relwidth=0.9,relheight=0.12)
 
         #Area - 5 
-        icono = Image.open(os.path.join(path,"ajuste.ico")).resize((15,15))
+        icono = Image.open(os.path.join(path,"area.png")).resize((15,15))
         self.iconArea = ImageTk.PhotoImage(icono)
         self.btnArea = tk.Button(self.BarraSelecciones)
-        self.btnArea.config(text="Area")
+        self.btnArea.config(image =self.iconArea)
         self.btnArea.place(relx=0.06, rely=0.72,relwidth=0.9,relheight=0.12)
 
         #Sincronizar imagenes - 6
-        icono = Image.open(os.path.join(path,"ajuste.ico")).resize((15,15))
+        icono = Image.open(os.path.join(path,"sincro.png")).resize((15,15))
         self.iconSicronizar = ImageTk.PhotoImage(icono)
         self.btnSincronizar = tk.Button(self.BarraSelecciones)
-        self.btnSincronizar.config(text="=", command=self.sincronizarTool)
+        self.btnSincronizar.config(image=self.iconSicronizar, command=self.sincronizarTool)
         self.btnSincronizar.place(relx=0.06, rely=0.86,relwidth=0.9,relheight=0.12)
 
     def createEtiquetaDeDatos(self):
@@ -302,7 +302,7 @@ class FrmImagen(tk.Frame):
             case "ZoomMenos":
                 self.canvas_widget.bind("<ButtonPress-1>", self.zoomMenos)
                 self.btnDiminuyeZoom.config(bg="gray40",relief="sunken")
-                self.config(cursor="plus")
+                self.config(cursor="cross_reverse")
             case "":
                 exit
         self.herramientaSeleccionada = herramienta
