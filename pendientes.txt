@@ -1,3 +1,1 @@
-1.-Corregir los iconos
-2.-Colocar el icono de area
-3.-Homojenizar los iconos en el mismo formato y estilo de nombres
+4.-Investigar por que la escala para obtener las capas de sentinel3 usa 32768 y no 65536

@@ -12,3 +12,25 @@ Librerias utilizadas
     pip install rasterio
 5.-pyproj
     pip install pyproj
+6.- gdal
+    pip install paquete
+    Ej. pip install GDAL-3.4.3-cp311-cp311-win_amd64.whl
+    
+    Paquete descargado de https://www.lfd.uci.edu/~gohlke/pythonlibs/#gdal
+    cp311 = version de python compatible (3.11) - arquitecturas compatibles: win_amd64 para arquitecutas de 64bits o win32 para 32bits
+
+
+<-- Requerimientos -->
+python 3.12,3.11 o menor
+
+<-- Entrada -->
+Sentinel3: 
+
+<--Aumento de iluminacion -->
+El aumento de iluminacion de una imagen se consigue reduciendo los bits del valor maximo en el componente -scale de una imagen de 16bits
+
+#Ejemplo de Escalamiento realizado a imagen de 16bits
+#gdal_translate -of GTiff -ot Byte -scale 0 32560 0 255 $nom/${nom}_irc16.tif $nom/${nom}_irc8.tif 
+
+<-- Salida -->
+sentinel3: Imagen.tif con 21 bandas de 16bits(UInt)
