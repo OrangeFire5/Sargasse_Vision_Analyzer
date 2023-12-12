@@ -9,10 +9,11 @@ from matplotlib.figure import Figure
 #from controller import *
 
 class FrmImagen(tk.Frame):
-    def __init__(self, master = None, controlador=None, nombre="", textoLabel = "Imagen Sentinel a color real", image = "imgColorReal.png"):
+    def __init__(self, master = None, controlador=None,gestorArchivos=None, nombre="", textoLabel = "Imagen Sentinel a color real", image = "imgColorReal.png"):
         super().__init__(master)
         self.master = master
         self.controller = controlador
+        self.gestorArchivos = gestorArchivos
         self.nombre = nombre
         self.ImagenCargada = False
         self.config(relief="ridge", bd=5)
@@ -191,8 +192,7 @@ class FrmImagen(tk.Frame):
         self.BarraSelecciones.grid_forget()
     #Abre una imagen
     def AbrirImagen(self):
-        filtros=(("Imagenes", ("*.png","*.jpg","*.tif","*.ico")), ("Todos los archivos", "*.*"))
-        filename = filedialog.askopenfilename(filetypes=filtros, title="Abrir Imagen")
+        filename = self.gestorArchivos.abrirImagen()
         if filename:
             self.lbImagen.grid_forget()
             self.btnAbrirImagen.grid_forget()

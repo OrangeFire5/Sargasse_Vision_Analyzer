@@ -4,6 +4,7 @@ from clases.frmTablaSelecciones import *
 from clases.frmBotones import *
 from clases.barraMenu import *
 from clases.controller import *
+from funcionalidad.gestorArchivos import *
 
 app = tk.Tk()
 app.title("Sargasse Vision Analyzer")
@@ -23,10 +24,11 @@ app.columnconfigure(4,weight=3)
 app.columnconfigure(5,weight=3)
 
 controlador = Controller(app)
+gestorArchivos = GestorArchivos()
 
-frameImagen1 = FrmImagen(app,controlador,"FrameImagen1")
+frameImagen1 = FrmImagen(app,controlador, gestorArchivos,"FrameImagen1")
 frameImagen1.grid(row=0, column=0, columnspan=3, sticky="nsew",padx=2,pady=2)
-frameImagen2 = FrmImagen(app,controlador,"FrameImagen2","Imagen Sentinel procesada","imgProcesada.png")
+frameImagen2 = FrmImagen(app,controlador,gestorArchivos,"FrameImagen2","Imagen Sentinel procesada","imgProcesada.png")
 frameImagen2.grid(row=0, column=3, columnspan=3, sticky="nsew",padx=2,pady=2)
 frameTablaSelecciones = FrmTablaSelecciones(app).grid(row=1, column=0,columnspan=5, sticky="nsew",padx=2,pady=2)
 frameBotones = FrmBotones(app).grid(row=1, column=5, sticky="nsew",padx=2,pady=2)
