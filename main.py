@@ -11,9 +11,6 @@ app.title("Sargasse Vision Analyzer")
 app.geometry("800x500")
 app.iconbitmap("img/iconos/icon.ico")
 
-#Barra de menu
-BarraDeMenu(app)
-
 app.rowconfigure(0,weight=9)
 app.rowconfigure(1,weight=1)
 app.columnconfigure(0,weight=3)
@@ -24,7 +21,9 @@ app.columnconfigure(4,weight=3)
 app.columnconfigure(5,weight=3)
 
 controlador = Controller(app)
-gestorArchivos = GestorArchivos()
+gestorArchivos = GestorArchivos(controlador)
+BarraDeMenu(app,gestorArchivos)
+
 
 frameImagen1 = FrmImagen(app,controlador, gestorArchivos,"FrameImagen1")
 frameImagen1.grid(row=0, column=0, columnspan=3, sticky="nsew",padx=2,pady=2)

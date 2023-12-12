@@ -1,18 +1,27 @@
 import os
 import glob
 import zipfile
+import shutil
+import json
+
 from osgeo import gdal
 from tkinter import filedialog
 
 class GestorArchivos:
-    def __init__(self):
+    def __init__(self,controller=None):
+        self.controller = controller
         self.rutaProyecto = os.path.expanduser("~")
-        self.rutaProyecto = os.path.join(self.rutaProyecto,"savia")
+        self.rutaProyecto = os.path.join(self.rutaProyecto,".savia")
         self.rutaImgBruta = ""
         self.rutaImgProcesada = ""
-        self.rutaBandas = ""
-        self.rutaImg = ""
-        self.temp = ""
+        self.rutaImgBruta_bands = ""
+        self.rutaImgBruta_img = ""
+        self.rutaImgBruta_temp= ""
+        self.abrirArchivo =False
+        #Variable a guardar
+        self.nomImg1= ""
+        self.nombreImgFrame1 = ""
+        self.nombreImgFrame2 = ""
         self.allBands=[]
         self.Inicializar()
 
@@ -20,49 +29,121 @@ class GestorArchivos:
         #Revisa si existe la carpeta 
         if not os.path.exists(self.rutaProyecto):
             os.makedirs(self.rutaProyecto)
-        i=1
-        print(os.path.join(self.rutaProyecto,f"proyect{i}"))
-        while os.path.exists(os.path.join(self.rutaProyecto,f"proyect{i}")):
-            i += 1
-        self.rutaProyecto = os.path.join(self.rutaProyecto,f"proyect{i}")
-        os.makedirs(self.rutaProyecto)
+        
+
+    def crearDirTrabajo(self):
+        if not self.abrirArchivo:
+            i=1
+            while os.path.exists(os.path.join(self.rutaProyecto,f"proyect{i}")):
+                i += 1
+            self.rutaProyecto = os.path.join(self.rutaProyecto,f"proyect{i}")
+            os.makedirs(self.rutaProyecto)            
         self.rutaImgBruta = os.path.join(self.rutaProyecto,"imgBruta")
         self.rutaImgProcesada = os.path.join(self.rutaProyecto,"imgProcesada")
-        self.rutaBandas = os.path.join(self.rutaImgBruta,"bands")
-        self.rutaImg = os.path.join(self.rutaImgBruta,"img")
-        self.temp = os.path.join(self.rutaImgBruta,"temp")
-        os.makedirs(self.rutaImgBruta)
-        os.makedirs(self.rutaImgProcesada)
+        #Directorios en imagen Bruta
+        self.rutaImgBruta_bands = os.path.join(self.rutaImgBruta,"bands")
+        self.rutaImgBruta_img = os.path.join(self.rutaImgBruta,"img")
+        self.rutaImgBruta_temp = os.path.join(self.rutaImgBruta,"temp")
+        #Directorios en imagen Procesada
+        self.rutaImgProcesada_img = os.path.join(self.rutaImgProcesada,"img")
+        if not self.abrirArchivo:
+            os.makedirs(self.rutaImgBruta)
+            os.makedirs(self.rutaImgProcesada)
+            os.makedirs(self.rutaImgProcesada_img)
 
-    def abrirImagen(self):
-        filtros=(("Sentinel-3", ("*.zip","S3A*.zip")),("Sentinel-2", ("*.zip","S2A*.zip")), ("Imagen Procesada", "*.tif"))
-        filename = filedialog.askopenfilename(filetypes=filtros, title="Seleccione imagen")
+    def abrirImagen(self,nombre):
+        if self.abrirArchivo:
+            if nombre == "FrameImagen1":
+                return os.path.join(self.rutaImgBruta_img,self.nomImg1)
+            else:
+                return os.path.join(self.rutaImgProcesada_img,self.nombreImgFrame2)
+        else:
+            if nombre == "FrameImagen1":
+                filtros=(("Sentinel-3", ("*.zip","S3A*.zip")),("Sentinel-2", ("*.zip","S2A*.zip")))
+            elif nombre == "FrameImagen2":
+                filtros=(("Imagen Procesada", "*.tif"),)
+            else:
+                return "" 
+            filename = filedialog.askopenfilename(filetypes=filtros, title="Seleccione imagen")
+            if filename:
+                self.crearDirTrabajo()
+                nombre, ext = os.path.splitext(filename)
+                nombre = os.path.basename(nombre)
+                if ext == ".zip":
+                    self.nombreImgFrame1 =f'{nombre}{ext}'
+                    #Descomprime en carpeta 
+                    with zipfile.ZipFile(filename, 'r') as zip_ref:
+                        zip_ref.extractall(self.rutaImgBruta)
+                    rutaImgDescomprimida = os.path.join(self.rutaImgBruta,os.listdir(self.rutaImgBruta)[0])
+                    os.makedirs(self.rutaImgBruta_bands)
+                    os.makedirs(self.rutaImgBruta_img)
+                    os.makedirs(self.rutaImgBruta_temp)
+                    #Identifica tipo de imagen y compruba la existencia de todas los archivos necesarios
+                    if self.comprobacionSEN3(rutaImgDescomprimida):
+                        self.procesarImagenBrutaSEN3(rutaImgDescomprimida)
+                        #Modos de color = 14,15,16 bits
+                        filename = os.path.join(self.rutaImgBruta_img,"RGB_14bits.tif")
+                        self.nomImg1 ="RGB_14bits.tif"
+                        return filename
+                    elif self.comprobacionSEN2(rutaImgDescomprimida):
+                        self.construirCapasSEN2(rutaImgDescomprimida)
+                        self.construirImgSen2()
+                        #Modos de color = 12,13,14 bits
+                        filename = os.path.join(self.rutaImgBruta_img,"RGB_12bits.tif")
+                        self.nomImg1 = "RGB_12bits.tif"
+                        return filename
+                    else:
+                        print("El documento no cuenta con la informacion necesaria para generar la imagen")
+                elif ext == ".tif":
+                    self.nombreImgFrame2 =f'{nombre}{ext}'
+                    shutil.copy(filename, self.rutaImgProcesada_img)
+                    return filename
+            
+    def abrirProyecto(self):
+        filename = filedialog.askdirectory()
         if filename:
-            nombre, ext = os.path.splitext(filename)
-            nombre = os.path.basename(nombre)
-            if ext == ".zip":
-                #Descomprime en carpeta temporal
-                with zipfile.ZipFile(filename, 'r') as zip_ref:
-                    zip_ref.extractall(self.rutaImgBruta)
-                rutaImgDescomprimida = os.path.join(self.rutaImgBruta,os.listdir(self.rutaImgBruta)[0])
-                os.makedirs(self.rutaBandas)
-                os.makedirs(self.rutaImg)
-                os.makedirs(self.temp)
-                #Identifica tipo de imagen y compruba la existencia de todas los archivos necesarios
-                if self.comprobacionSEN3(rutaImgDescomprimida):
-                    self.procesarImagenBrutaSEN3(rutaImgDescomprimida)
-                    filename = os.path.join(self.rutaImg,"RGB_15bits.tif")
-                    return filename
-                elif self.comprobacionSEN2(rutaImgDescomprimida):
-                    self.construirCapasSEN2(rutaImgDescomprimida)
-                    self.construirImgSen2()
-                    filename = os.path.join(self.rutaImg,"RGB_13bits.tif")
-                    return filename
-                else:
-                    print("El documento no cuenta con la informacion necesaria para generar la imagen")
-            elif ext == ".tif":
-                return filename
-            return ""
+            self.abrirArchivo = True
+            self.rutaProyecto = filename
+            self.crearDirTrabajo()
+            self.rutaImgBruta = os.path.join(self.rutaProyecto,"imgBruta")
+            self.rutaImgProcesada = os.path.join(self.rutaProyecto,"imgProcesada")
+            #Directorios en imagen Bruta
+            self.rutaImgBruta_bands = os.path.join(self.rutaImgBruta,"bands")
+            self.rutaImgBruta_img = os.path.join(self.rutaImgBruta,"img")
+            self.rutaImgBruta_temp = os.path.join(self.rutaImgBruta,"temp")
+            #Directorios en imagen Procesada
+            self.rutaImgProcesada_img = os.path.join(self.rutaImgProcesada,"img")
+
+            with open(os.path.join(filename,'datos.json'), 'r') as archivo_json:
+                datos = json.load(archivo_json)
+            self.nomImg1= datos['nombreImgArchivo1']
+            self.nombreImgFrame1 = datos['nombreImgFrame1']
+            self.nombreImgFrame2 = datos['nombreImgFrame2']
+
+            if not self.nomImg1 == '':
+                self.controller.frmImagen1.AbrirImagen()
+            elif not self.nombreImgFrame2 == '':
+                self.controller.frmImagen2.AbrirImagen()
+            
+            self.abrirArchivo = False
+        
+    def guardar(self):
+        datos={'nombreImgArchivo1': self.nomImg1,'nombreImgFrame1':self.nombreImgFrame1,
+               'nombreImgFrame2':self.nombreImgFrame2}
+        with open(os.path.join(self.rutaProyecto,'datos.json'), 'w') as archivo_json:
+            json.dump(datos, archivo_json)
+
+            
+    def getNombreImg(self,nombre):
+        if nombre == "FrameImagen1":
+            return self.nombreImgFrame1
+        else:
+            return self.nombreImgFrame2
+    def getRutaImgBruta_img (self):
+        return self.rutaImgBruta_img
+    
+
+#<--Funciones Sentinel-->    
 
     def comprobacionSEN3(self,ruta):
         if not os.path.exists(os.path.join(ruta, "geo_coordinates.nc")):
@@ -102,41 +183,41 @@ class GestorArchivos:
             nombre = os.path.splitext(file)[0]
             nombre = os.path.basename(nombre)
             if bits == 16:
-                gdal.Translate(os.path.join(self.rutaBandas,f'{nombre}.tif'), gdal.Open(file), options=gdal_translate_options)
+                gdal.Translate(os.path.join(self.rutaImgBruta_bands,f'{nombre}.tif'), gdal.Open(file), options=gdal_translate_options)
             else:    
-                gdal.Translate(os.path.join(self.rutaBandas,f'{nombre}_{bits}bits.tif'), gdal.Open(file), options=gdal_translate_options)
+                gdal.Translate(os.path.join(self.rutaImgBruta_bands,f'{nombre}_{bits}bits.tif'), gdal.Open(file), options=gdal_translate_options)
     def obtenerLatYLon(self,ruta):
         gdal_translate_options = ['-of', 'VRT']
-        gdal.Translate(os.path.join(self.temp,'lat.vrt'), gdal.Open(f'NETCDF:"{os.path.join(ruta,'geo_coordinates.nc')}":latitude'), options=gdal_translate_options)
-        gdal.Translate(os.path.join(self.temp,'lon.vrt'), gdal.Open(f'NETCDF:"{os.path.join(ruta,'geo_coordinates.nc')}":longitude'), options=gdal_translate_options)
+        gdal.Translate(os.path.join(self.rutaImgBruta_temp,'lat.vrt'), gdal.Open(f'NETCDF:"{os.path.join(ruta,'geo_coordinates.nc')}":latitude'), options=gdal_translate_options)
+        gdal.Translate(os.path.join(self.rutaImgBruta_temp,'lon.vrt'), gdal.Open(f'NETCDF:"{os.path.join(ruta,'geo_coordinates.nc')}":longitude'), options=gdal_translate_options)
     
     def construirImgYGeoRefSen3(self,bits=16,mode="RGB"): 
-        pathLat = os.path.join(self.temp,'lat.vrt')
-        pathLon =  os.path.join(self.temp,'lon.vrt')
-        pathGeo = os.path.join(self.temp,'geo.tif')
-        pathCoord = os.path.join(self.temp,'coord.vrt')
-        pathInfo = os.path.join(self.temp,'info.txt')
+        pathLat = os.path.join(self.rutaImgBruta_temp,'lat.vrt')
+        pathLon =  os.path.join(self.rutaImgBruta_temp,'lon.vrt')
+        pathGeo = os.path.join(self.rutaImgBruta_temp,'geo.tif')
+        pathCoord = os.path.join(self.rutaImgBruta_temp,'coord.vrt')
+        pathInfo = os.path.join(self.rutaImgBruta_temp,'info.txt')
         
         if mode == "RGB":
             if bits == 16:
-                bandRed= os.path.join(self.rutaBandas,f'Oa08_radiance.tif')
-                bandVerde= os.path.join(self.rutaBandas,f'Oa06_radiance.tif')
-                bandAzul= os.path.join(self.rutaBandas,f'Oa04_radiance.tif')
+                bandRed= os.path.join(self.rutaImgBruta_bands,f'Oa08_radiance.tif')
+                bandVerde= os.path.join(self.rutaImgBruta_bands,f'Oa06_radiance.tif')
+                bandAzul= os.path.join(self.rutaImgBruta_bands,f'Oa04_radiance.tif')
             else:
-                bandRed= os.path.join(self.rutaBandas,f'Oa08_radiance_{bits}bits.tif')
-                bandVerde= os.path.join(self.rutaBandas,f'Oa06_radiance_{bits}bits.tif')
-                bandAzul= os.path.join(self.rutaBandas,f'Oa04_radiance_{bits}bits.tif')
-            pathImage= os.path.join(self.rutaImg,f'rgb_{bits}bits.tif')
+                bandRed= os.path.join(self.rutaImgBruta_bands,f'Oa08_radiance_{bits}bits.tif')
+                bandVerde= os.path.join(self.rutaImgBruta_bands,f'Oa06_radiance_{bits}bits.tif')
+                bandAzul= os.path.join(self.rutaImgBruta_bands,f'Oa04_radiance_{bits}bits.tif')
+            pathImage= os.path.join(self.rutaImgBruta_img,f'rgb_{bits}bits.tif')
         elif mode == "FC":
             if bits == 16:
-                bandRed= os.path.join(self.rutaBandas,f'Oa17_radiance.tif')
-                bandVerde= os.path.join(self.rutaBandas,f'Oa08_radiance.tif')
-                bandAzul= os.path.join(self.rutaBandas,f'Oa06_radiance.tif')
+                bandRed= os.path.join(self.rutaImgBruta_bands,f'Oa17_radiance.tif')
+                bandVerde= os.path.join(self.rutaImgBruta_bands,f'Oa08_radiance.tif')
+                bandAzul= os.path.join(self.rutaImgBruta_bands,f'Oa06_radiance.tif')
             else:
-                bandRed= os.path.join(self.rutaBandas,f'Oa17_radiance_{bits}bits.tif')
-                bandVerde= os.path.join(self.rutaBandas,f'Oa08_radiance.tif')
-                bandAzul= os.path.join(self.rutaBandas,f'Oa06_radiance.tif')
-            pathImage= os.path.join(self.rutaImg,f'fc_{bits}bits.tif')
+                bandRed= os.path.join(self.rutaImgBruta_bands,f'Oa17_radiance_{bits}bits.tif')
+                bandVerde= os.path.join(self.rutaImgBruta_bands,f'Oa08_radiance.tif')
+                bandAzul= os.path.join(self.rutaImgBruta_bands,f'Oa06_radiance.tif')
+            pathImage= os.path.join(self.rutaImgBruta_img,f'fc_{bits}bits.tif')
 
         contenido_vrt = f"""
         <VRTDataset rasterXSize="4865" rasterYSize="4090">
@@ -247,7 +328,6 @@ class GestorArchivos:
             for band in self.bandas[i]:
                 if len(glob.glob(os.path.join(pathActual,band))) == 0:
                     return False
-                print(f"{band}banda existente")
         return True
     def construirCapasSEN2(self,ruta):
         path = os.path.join(ruta, f"GRANULE/*/IMG_DATA")
@@ -259,7 +339,7 @@ class GestorArchivos:
                 rutaCompleta = glob.glob(os.path.join(pathActual,band))[0]
                 nombre = band.replace('*','')
                 nombre = nombre.split('_',1)[0]
-                gdal.Translate(os.path.join(self.rutaBandas,f'{nombre}.tif'), gdal.Open(rutaCompleta), options=gdal_translate_options)
+                gdal.Translate(os.path.join(self.rutaImgBruta_bands,f'{nombre}.tif'), gdal.Open(rutaCompleta), options=gdal_translate_options)
 
         #Contruccion de bandas para obtencion de imagen:
         self.bandasRGBYFC =['*B02_10m.jp2','*B03_10m.jp2','*B04_10m.jp2','*B08_10m.jp2']
@@ -270,7 +350,7 @@ class GestorArchivos:
                 rutaCompleta = glob.glob(os.path.join(path,band))[0]
                 nombre = band.replace('*','')
                 nombre = nombre.split('_',1)[0]
-                gdal.Translate(os.path.join(self.rutaBandas,f'{nombre}_{i}bits.tif'), gdal.Open(rutaCompleta), options=gdal_translate_options)
+                gdal.Translate(os.path.join(self.rutaImgBruta_bands,f'{nombre}_{i}bits.tif'), gdal.Open(rutaCompleta), options=gdal_translate_options)
         gdal_translate_options = ['-b', '1'] 
     def construirImgSen2(self):
         gdal_translate_options = ['-b', '1']
@@ -278,15 +358,15 @@ class GestorArchivos:
         #Combinacion de coloeres rgb('B04','B03','B02'),FC('B08','B04','B03')
         for i in range(12,15):
             for band in bandas:
-                rutaBanda = os.path.join(self.rutaBandas,f'{band}_{i}bits.tif')  
-                gdal.Translate(os.path.join(self.temp,f'{band}.vrt'), rutaBanda, options=gdal_translate_options)
+                rutaBanda = os.path.join(self.rutaImgBruta_bands,f'{band}_{i}bits.tif')  
+                gdal.Translate(os.path.join(self.rutaImgBruta_temp,f'{band}.vrt'), rutaBanda, options=gdal_translate_options)
             #Construccion de imagen RGB
             gdal_buildvrt_options = ['-separate']
-            gdal.BuildVRT(os.path.join(self.temp,'rgb.vrt'),[os.path.join(self.temp,'B04.vrt'), os.path.join(self.temp,'B03.vrt'), os.path.join(self.temp,'B02.vrt')],options=gdal_buildvrt_options)
+            gdal.BuildVRT(os.path.join(self.rutaImgBruta_temp,'rgb.vrt'),[os.path.join(self.rutaImgBruta_temp,'B04.vrt'), os.path.join(self.rutaImgBruta_temp,'B03.vrt'), os.path.join(self.rutaImgBruta_temp,'B02.vrt')],options=gdal_buildvrt_options)
             gdal_translate_options = ['-of', 'GTiff', '-ot', 'Byte']   
-            gdal.Translate(os.path.join(self.rutaImg,f'rgb_{i}bits.tif'),os.path.join(self.temp,'rgb.vrt'), options=gdal_translate_options)    
+            gdal.Translate(os.path.join(self.rutaImgBruta_img,f'rgb_{i}bits.tif'),os.path.join(self.rutaImgBruta_temp,'rgb.vrt'), options=gdal_translate_options)    
             #Construccion de imagen FC
             gdal_buildvrt_options = ['-separate']
-            gdal.BuildVRT(os.path.join(self.temp,'fc.vrt'),[os.path.join(self.temp,'B08.vrt'), os.path.join(self.temp,'B04.vrt'), os.path.join(self.temp,'B03.vrt')],options=gdal_buildvrt_options)
+            gdal.BuildVRT(os.path.join(self.rutaImgBruta_temp,'fc.vrt'),[os.path.join(self.rutaImgBruta_temp,'B08.vrt'), os.path.join(self.rutaImgBruta_temp,'B04.vrt'), os.path.join(self.rutaImgBruta_temp,'B03.vrt')],options=gdal_buildvrt_options)
             gdal_translate_options = ['-of', 'GTiff', '-ot', 'Byte']   
-            gdal.Translate(os.path.join(self.rutaImg,f'fc_{i}bits.tif'),os.path.join(self.temp,'fc.vrt'), options=gdal_translate_options)
+            gdal.Translate(os.path.join(self.rutaImgBruta_img,f'fc_{i}bits.tif'),os.path.join(self.rutaImgBruta_temp,'fc.vrt'), options=gdal_translate_options)

@@ -116,49 +116,63 @@ class FrmImagen(tk.Frame):
         self.btnSincronizar.config(image=self.iconSicronizar, command=self.sincronizarTool)
         self.btnSincronizar.place(relx=0.06, rely=0.86,relwidth=0.9,relheight=0.12)
 
-    def createBarraDeDatos(self):
+    def createBarraDeDatos(self, nombre):
         self.BarraDeDatos = tk.Frame(self)
         self.BarraDeDatos.config(background="gray",relief=None)
         self.BarraDeDatos.place(relx=0, rely=0.935,relwidth=1,relheight=0.065)
 
+        if self.nombre == "FrameImagen1":
+            #Etiquetas de nombre
+            self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos)
+            self.datosPixel = tk.StringVar()
+            self.datosPixel.set(nombre)
+            self.EtiquetaDeDatos.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.W)
+            self.EtiquetaDeDatos.place(relx=0, rely=0,relwidth=0.3,relheight=1)
 
-        #Etiquetas de nombre
-        self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos)
-        self.datosPixel = tk.StringVar()
-        self.datosPixel.set("S2A_MSIL2A_20230610T160901_N9999_R140_T16QEJ_20230611T015019")
-        self.EtiquetaDeDatos.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.W)
-        self.EtiquetaDeDatos.place(relx=0, rely=0,relwidth=0.3,relheight=1)
-        
-        #Etiquetas de datos
-        self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos)
-        self.datosPixel = tk.StringVar()
-        self.datosPixel.set("Value:--, Lon:--, Lat:--, x:--, y:--")
-        self.EtiquetaDeDatos.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.E)
-        self.EtiquetaDeDatos.place(relx=0.3, rely=0,relwidth=0.55,relheight=1)
+            #Etiquetas de datos
+            self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos)
+            self.datosPixel = tk.StringVar()
+            self.datosPixel.set("Lon:--, Lat:--, x:--, y:--")
+            self.EtiquetaDeDatos.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.E)
+            self.EtiquetaDeDatos.place(relx=0.3, rely=0,relwidth=0.55,relheight=1)
 
-                #Rutas
-        path = os.path.dirname(__file__)
-        path = os.path.dirname(path)
-        path = os.path.join(path,"img")
-        path = os.path.join(path,"iconos")
+            #Rutas
+            path = os.path.dirname(__file__)
+            path = os.path.dirname(path)
+            path = os.path.join(path,"img")
+            path = os.path.join(path,"iconos")
 
+            #Boton RGB
+            self.btnRGB = tk.Button(self.BarraDeDatos)
+            self.btnRGB.config(text="RGB", font=("Consolas", 7, "bold"), fg="white" ,bg="gray40",relief="sunken",cursor="arrow")
+            self.btnRGB.place(relx=0.85, rely=0,relwidth=0.05,relheight=1)
 
-        #Boton RGB
-        self.btnRGB = tk.Button(self.BarraDeDatos)
-        self.btnRGB.config(text="RGB", font=("Consolas", 7, "bold"), fg="white" ,bg="gray40",relief="sunken",cursor="arrow")
-        self.btnRGB.place(relx=0.85, rely=0,relwidth=0.05,relheight=1)
-        
-        #Boton FC
-        self.btnFC = tk.Button(self.BarraDeDatos)
-        self.btnFC.config(text="FC",font=("Consolas", 7, "bold"), bg="gray92", relief="raised",cursor="arrow")
-        self.btnFC.place(relx=0.9, rely=0,relwidth=0.05,relheight=1)
+            #Boton FC
+            self.btnFC = tk.Button(self.BarraDeDatos)
+            self.btnFC.config(text="FC",font=("Consolas", 7, "bold"), bg="gray92", relief="raised",cursor="arrow")
+            self.btnFC.place(relx=0.9, rely=0,relwidth=0.05,relheight=1)
 
-        #Modos de iluminacion
-        icono = Image.open(os.path.join(path,"sol3.png")).resize((14,14))
-        self.iconIluminacion = ImageTk.PhotoImage(icono)
-        self.btnIluminacion = tk.Button(self.BarraDeDatos)
-        self.btnIluminacion.config(image=self.iconIluminacion, bg="gray92", relief="raised",cursor="arrow")
-        self.btnIluminacion.place(relx=0.95, rely=0,relwidth=0.05,relheight=1)
+            #Modos de iluminacion
+            self.modoIluminacion = 1
+            icono = Image.open(os.path.join(path,"sol1.png")).resize((14,14))
+            self.iconIluminacion = ImageTk.PhotoImage(icono)
+            self.btnIluminacion = tk.Button(self.BarraDeDatos)
+            self.btnIluminacion.config(image=self.iconIluminacion, bg="gray92", relief="raised",cursor="arrow",command=self.cambiarModoIluminacion)
+            self.btnIluminacion.place(relx=0.95, rely=0,relwidth=0.05,relheight=1)
+        else:
+            #Etiquetas de nombre
+            self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos)
+            self.datosPixel = tk.StringVar()
+            self.datosPixel.set(nombre)
+            self.EtiquetaDeDatos.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.W)
+            self.EtiquetaDeDatos.place(relx=0, rely=0,relwidth=0.4,relheight=1)
+
+            #Etiquetas de datos
+            self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos)
+            self.datosPixel = tk.StringVar()
+            self.datosPixel.set("Value:--, Lon:--, Lat:--, x:--, y:--")
+            self.EtiquetaDeDatos.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.E)
+            self.EtiquetaDeDatos.place(relx=0.4, rely=0,relwidth=0.6,relheight=1)
 
 
     def createCuadroClasificador(self):
@@ -192,7 +206,7 @@ class FrmImagen(tk.Frame):
         self.BarraSelecciones.grid_forget()
     #Abre una imagen
     def AbrirImagen(self):
-        filename = self.gestorArchivos.abrirImagen()
+        filename = self.gestorArchivos.abrirImagen(self.nombre)
         if filename:
             self.lbImagen.grid_forget()
             self.btnAbrirImagen.grid_forget()
@@ -218,7 +232,7 @@ class FrmImagen(tk.Frame):
             ##Crea elementos para trabajar la imagen##
             self.ImagenCargada=True        
             self.createBarraSelecciones()
-            self.createBarraDeDatos()
+            self.createBarraDeDatos(self.gestorArchivos.getNombreImg(self.nombre))
             self.createCuadroClasificador()
             self.ocultarCuadroClasificador()
             #self.mostrarCuadroClasificador()           
@@ -230,7 +244,10 @@ class FrmImagen(tk.Frame):
         self.x = round(event.xdata) if event.xdata is not None  else None
         self.y = round(event.ydata) if event.ydata is not None else None
         # Mostrar las coordenadas en la consola
-        self.datosPixel.set(f"Value:--, Lon:--, Lat:--, x:{self.x}, y:{self.y}")
+        if self.nombre== "FrameImagen1":
+            self.datosPixel.set(f"Lon:--, Lat:--, x:{self.x}, y:{self.y}")
+        elif self.nombre== "FrameImagen2":
+            self.datosPixel.set(f"Value:--, Lon:--, Lat:--, x:{self.x}, y:{self.y}")
 
     ### Inicio funciones Zoom ###
     def zoomRuedaRaton(self, event):
@@ -344,3 +361,21 @@ class FrmImagen(tk.Frame):
             case "":
                 exit
         self.herramientaSeleccionada = herramienta
+    #Funciones de barra de datos
+
+    def cambiarModoIluminacion(self):
+        ruta = self.gestorArchivos.getRutaImgBruta_img()
+
+        if self.modoIluminacion == 1:
+            self.image = Image.open(f'{ruta}/rgb_13bits.tif')
+            self.ax.imshow(self.image)
+            self.plt.draw()
+            self.plt.show()
+        #elif self.modoIluminacion == 2:
+        
+        #elif self.modoIluminacion == 3:
+
+
+    def cambiarRGBoFC(self):
+        exit
+

@@ -2,9 +2,10 @@
 import tkinter as tk
 
 class BarraDeMenu(tk.Menu):
-    def __init__(self, master = None):
+    def __init__(self, master = None, gestorArchivos=None):
         super().__init__(master)
         self.master = master
+        self.gestorArchivos = gestorArchivos
         #Menu general
         self.barra_menus = tk.Menu()
 
@@ -12,9 +13,9 @@ class BarraDeMenu(tk.Menu):
         self.menu_archivo = tk.Menu(self.barra_menus, tearoff=False)
         self.menu_archivo.add_command(label="Nuevo proyecto",accelerator="Ctrl+N",command=self.prueba,compound=tk.LEFT)
         self.menu_archivo.add_separator()
-        self.menu_archivo.add_command(label="Abrir proyecto",accelerator="Ctrl+A",command=self.prueba,compound=tk.LEFT)
+        self.menu_archivo.add_command(label="Abrir proyecto",accelerator="Ctrl+A",command=self.gestorArchivos.abrirProyecto,compound=tk.LEFT)
         self.menu_archivo.add_separator()
-        self.menu_archivo.add_command(label="Guardar",accelerator="Ctrl+G",command=self.prueba,compound=tk.LEFT)
+        self.menu_archivo.add_command(label="Guardar",accelerator="Ctrl+G",command=self.gestorArchivos.guardar,compound=tk.LEFT)
         self.menu_archivo.add_command(label="Guardar como...",accelerator="Ctrl+G",command=self.prueba,compound=tk.LEFT)
         self.menu_archivo.add_separator()
         self.menu_archivo.add_command(label="Exportar..",accelerator="Ctrl+E",command=self.prueba,compound=tk.LEFT)
