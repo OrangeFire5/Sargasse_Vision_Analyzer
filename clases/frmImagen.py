@@ -143,6 +143,7 @@ class FrmImagen(tk.Frame):
             path = os.path.join(path,"iconos")
 
             #Boton RGB
+            self.modoDeColoracion = "rgb"
             self.btnRGB = tk.Button(self.BarraDeDatos)
             self.btnRGB.config(text="RGB", font=("Consolas", 7, "bold"), fg="white" ,bg="gray40",relief="sunken",cursor="arrow")
             self.btnRGB.place(relx=0.85, rely=0,relwidth=0.05,relheight=1)
@@ -153,7 +154,10 @@ class FrmImagen(tk.Frame):
             self.btnFC.place(relx=0.9, rely=0,relwidth=0.05,relheight=1)
 
             #Modos de iluminacion
-            self.modoIluminacion = 1
+            if self.gestorArchivos.getTipoImgBruta()=="SEN2":
+                self.modoIluminacion = 12
+            else:
+                self.modoIluminacion = 14
             icono = Image.open(os.path.join(path,"sol1.png")).resize((14,14))
             self.iconIluminacion = ImageTk.PhotoImage(icono)
             self.btnIluminacion = tk.Button(self.BarraDeDatos)
@@ -214,21 +218,7 @@ class FrmImagen(tk.Frame):
             self.contenedorImage.place(relx=0,rely=0,relwidth=1,relheight=0.935)
             ##Abre imagen##
             self.image = Image.open(filename)
-            self.anchoImagen, self.altoImagen = self.image.size
-            ##Configuracion de figura de mathplotlib##
-            self.fig = Figure()
-            self.ax = self.fig.add_subplot(111)
-            self.ax.set_adjustable("datalim")
-            self.ax.set_position([0, 0, 1, 1])
-            self.ax.set_xlim(0,self.anchoImagen)
-            self.ax.set_ylim(self.altoImagen, 0)
-            self.ax.imshow(self.image)  
-            ## Crear un lienzo de Matplotlib en el frame##
-            self.canvas = FigureCanvasTkAgg(self.fig, master=self.contenedorImage)
-            self.canvas_widget = self.canvas.get_tk_widget()
-            self.canvas_widget.pack(fill=tk.BOTH, expand=True)
-            self.canvas_widget.bind("<MouseWheel>", self.zoomRuedaRaton)
-            self.canvas.mpl_connect("motion_notify_event", self.CoordenadasImagen)
+            self.cargarImagen()
             ##Crea elementos para trabajar la imagen##
             self.ImagenCargada=True        
             self.createBarraSelecciones()
@@ -237,7 +227,24 @@ class FrmImagen(tk.Frame):
             self.ocultarCuadroClasificador()
             #self.mostrarCuadroClasificador()           
             self.handTool()
-
+    def cargarImagen(self):
+        if hasattr(self, 'canvas'):
+            self.canvas_widget.destroy()
+        self.anchoImagen, self.altoImagen = self.image.size
+        ##Configuracion de figura de mathplotlib##
+        self.fig = Figure()
+        self.ax = self.fig.add_subplot(111)
+        self.ax.set_adjustable("datalim")
+        self.ax.set_position([0, 0, 1, 1])
+        self.ax.set_xlim(0,self.anchoImagen)
+        self.ax.set_ylim(self.altoImagen, 0)
+        self.ax.imshow(self.image)  
+        ## Crear un lienzo de Matplotlib en el frame##
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.contenedorImage)
+        self.canvas_widget = self.canvas.get_tk_widget()
+        self.canvas_widget.pack(fill=tk.BOTH, expand=True)
+        self.canvas_widget.bind("<MouseWheel>", self.zoomRuedaRaton)
+        self.canvas.mpl_connect("motion_notify_event", self.CoordenadasImagen)
 
     def CoordenadasImagen(self, event):
         # Obtener las coordenadas del puntero
@@ -361,19 +368,31 @@ class FrmImagen(tk.Frame):
             case "":
                 exit
         self.herramientaSeleccionada = herramienta
-    #Funciones de barra de datos
 
+    #Funciones de barra de datos
     def cambiarModoIluminacion(self):
         ruta = self.gestorArchivos.getRutaImgBruta_img()
+        tipoImgBruta = self.gestorArchivos.getTipoImgBruta()
+        self.modoIluminacion += 1
+        if self.modoIluminacion > 14 and tipoImgBruta =="SEN2":
+            self.modoIluminacion = 12
+        if self.modoIluminacion > 16 and tipoImgBruta=="SEN3":
+            self.modoIluminacion = 14
+        self.image = Image.open(f'{ruta}/{self.modoDeColoracion}_{self.modoIluminacion}bits.tif')
+        self.cargarImagen()
 
-        if self.modoIluminacion == 1:
-            self.image = Image.open(f'{ruta}/rgb_13bits.tif')
-            self.ax.imshow(self.image)
-            self.plt.draw()
-            self.plt.show()
-        #elif self.modoIluminacion == 2:
-        
-        #elif self.modoIluminacion == 3:
+        path = os.path.dirname(__file__)
+        path = os.path.dirname(path)
+        path = os.path.join(path,"img")
+        path = os.path.join(path,"iconos")
+
+        if tipoImgBruta=="SEN2":
+            noIcon = self.modoIluminacion - 11
+        else:
+            noIcon = self.modoIluminacion - 13
+        icono = Image.open(os.path.join(path,f"sol{noIcon}.png")).resize((14,14))
+        self.iconIluminacion = ImageTk.PhotoImage(icono)
+        self.btnIluminacion.config(image=self.iconIluminacion)
 
 
     def cambiarRGBoFC(self):

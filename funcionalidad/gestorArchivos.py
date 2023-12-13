@@ -10,19 +10,21 @@ from tkinter import filedialog
 class GestorArchivos:
     def __init__(self,controller=None):
         self.controller = controller
-        self.rutaProyecto = os.path.expanduser("~")
-        self.rutaProyecto = os.path.join(self.rutaProyecto,".savia")
+        self.rutaProyecto = os.path.join(os.path.expanduser("~"),".savia")
         self.rutaImgBruta = ""
         self.rutaImgProcesada = ""
         self.rutaImgBruta_bands = ""
         self.rutaImgBruta_img = ""
         self.rutaImgBruta_temp= ""
+        self.diretoriosCreados =False
         self.abrirArchivo =False
+        self.allBands=[]
         #Variable a guardar
         self.nomImg1= ""
         self.nombreImgFrame1 = ""
         self.nombreImgFrame2 = ""
-        self.allBands=[]
+        self.tipoImgBruta = ""
+
         self.Inicializar()
 
     def Inicializar(self):
@@ -66,7 +68,9 @@ class GestorArchivos:
                 return "" 
             filename = filedialog.askopenfilename(filetypes=filtros, title="Seleccione imagen")
             if filename:
-                self.crearDirTrabajo()
+                if not self.diretoriosCreados:
+                    self.crearDirTrabajo()
+                    self.diretoriosCreados=True
                 nombre, ext = os.path.splitext(filename)
                 nombre = os.path.basename(nombre)
                 if ext == ".zip":
@@ -80,12 +84,14 @@ class GestorArchivos:
                     os.makedirs(self.rutaImgBruta_temp)
                     #Identifica tipo de imagen y compruba la existencia de todas los archivos necesarios
                     if self.comprobacionSEN3(rutaImgDescomprimida):
+                        self.tipoImgBruta = "SEN3"
                         self.procesarImagenBrutaSEN3(rutaImgDescomprimida)
                         #Modos de color = 14,15,16 bits
                         filename = os.path.join(self.rutaImgBruta_img,"RGB_14bits.tif")
                         self.nomImg1 ="RGB_14bits.tif"
                         return filename
                     elif self.comprobacionSEN2(rutaImgDescomprimida):
+                        self.tipoImgBruta = "SEN2"
                         self.construirCapasSEN2(rutaImgDescomprimida)
                         self.construirImgSen2()
                         #Modos de color = 12,13,14 bits
@@ -105,31 +111,25 @@ class GestorArchivos:
             self.abrirArchivo = True
             self.rutaProyecto = filename
             self.crearDirTrabajo()
-            self.rutaImgBruta = os.path.join(self.rutaProyecto,"imgBruta")
-            self.rutaImgProcesada = os.path.join(self.rutaProyecto,"imgProcesada")
-            #Directorios en imagen Bruta
-            self.rutaImgBruta_bands = os.path.join(self.rutaImgBruta,"bands")
-            self.rutaImgBruta_img = os.path.join(self.rutaImgBruta,"img")
-            self.rutaImgBruta_temp = os.path.join(self.rutaImgBruta,"temp")
-            #Directorios en imagen Procesada
-            self.rutaImgProcesada_img = os.path.join(self.rutaImgProcesada,"img")
-
             with open(os.path.join(filename,'datos.json'), 'r') as archivo_json:
                 datos = json.load(archivo_json)
             self.nomImg1= datos['nombreImgArchivo1']
             self.nombreImgFrame1 = datos['nombreImgFrame1']
             self.nombreImgFrame2 = datos['nombreImgFrame2']
+            self.tipoImgBruta = datos['tipoImgBruta']
 
             if not self.nomImg1 == '':
                 self.controller.frmImagen1.AbrirImagen()
-            elif not self.nombreImgFrame2 == '':
-                self.controller.frmImagen2.AbrirImagen()
-            
+            if not self.nombreImgFrame2 == '':
+                self.controller.frmImagen2.AbrirImagen()           
             self.abrirArchivo = False
         
     def guardar(self):
-        datos={'nombreImgArchivo1': self.nomImg1,'nombreImgFrame1':self.nombreImgFrame1,
+        datos={'nombreImgArchivo1': self.nomImg1,
+               'nombreImgFrame1':self.nombreImgFrame1,
+               'tipoImgBruta':self.tipoImgBruta,
                'nombreImgFrame2':self.nombreImgFrame2}
+        print(f'Guadado en:{os.path.join(self.rutaProyecto,'datos.json')}')
         with open(os.path.join(self.rutaProyecto,'datos.json'), 'w') as archivo_json:
             json.dump(datos, archivo_json)
 
@@ -141,6 +141,8 @@ class GestorArchivos:
             return self.nombreImgFrame2
     def getRutaImgBruta_img (self):
         return self.rutaImgBruta_img
+    def getTipoImgBruta(self):
+        return self.tipoImgBruta
     
 
 #<--Funciones Sentinel-->    
@@ -168,9 +170,7 @@ class GestorArchivos:
         #Modos de color = 14,15,16 bits
         self.obtenerLatYLon(ruta)
         self.construirCapasSen3(self.allBands)
-        self.construirImgYGeoRefSen3()
-        self.construirImgYGeoRefSen3("FC")
-        for i in range(14,16):
+        for i in range(14,17):
             self.construirCapasSen3(input_files,i)
             self.construirImgYGeoRefSen3(i)
             self.construirImgYGeoRefSen3(i,"FC")
@@ -215,8 +215,8 @@ class GestorArchivos:
                 bandAzul= os.path.join(self.rutaImgBruta_bands,f'Oa06_radiance.tif')
             else:
                 bandRed= os.path.join(self.rutaImgBruta_bands,f'Oa17_radiance_{bits}bits.tif')
-                bandVerde= os.path.join(self.rutaImgBruta_bands,f'Oa08_radiance.tif')
-                bandAzul= os.path.join(self.rutaImgBruta_bands,f'Oa06_radiance.tif')
+                bandVerde= os.path.join(self.rutaImgBruta_bands,f'Oa08_radiance_{bits}bits.tif')
+                bandAzul= os.path.join(self.rutaImgBruta_bands,f'Oa06_radiance_{bits}bits.tif')
             pathImage= os.path.join(self.rutaImgBruta_img,f'fc_{bits}bits.tif')
 
         contenido_vrt = f"""
