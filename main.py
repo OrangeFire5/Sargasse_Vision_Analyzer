@@ -3,7 +3,7 @@ from clases.frmImagen import *
 from clases.frmTablaSelecciones import *
 from clases.frmBotones import *
 from clases.barraMenu import *
-from clases.controller import *
+from funcionalidad.controller import *
 from funcionalidad.gestorArchivos import *
 
 app = tk.Tk()
