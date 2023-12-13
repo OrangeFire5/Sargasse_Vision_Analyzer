@@ -1,11 +1,12 @@
 #Generacion del marco donde se visualizaran las imagenes
-import tkinter as tk
 import os
+import tkinter as tk
+import rasterio
+
 from PIL import ImageTk, Image
-import matplotlib.image as mpimg
-from tkinter import filedialog
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+from pyproj import Transformer
 
 class FrmImagen(tk.Frame):
     def __init__(self, master = None, controlador=None,gestorArchivos=None, nombre="", textoLabel = "Imagen Sentinel a color real", image = "imgColorReal.png"):
@@ -122,13 +123,13 @@ class FrmImagen(tk.Frame):
         self.EtiquetaDeNombre = tk.Label(self.BarraDeDatos)
         self.datosPixel = tk.StringVar()
         self.datosPixel.set(nombre)
-        self.EtiquetaDeNombre.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.W)
+        self.EtiquetaDeNombre.config(bg="lightgrey",cursor="arrow",font=("", 7), textvariable=self.datosPixel, anchor=tk.W)
 
         #Etiquetas de datos
         self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos)
         self.datosPixel = tk.StringVar()
         self.datosPixel.set("Lon:--, Lat:--, x:--, y:--")
-        self.EtiquetaDeDatos.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.E)
+        self.EtiquetaDeDatos.config(bg="lightgrey",cursor="arrow",font=("", 7), textvariable=self.datosPixel, anchor=tk.E)
 
         #Rutas
         path = os.path.dirname(__file__)
@@ -157,8 +158,8 @@ class FrmImagen(tk.Frame):
             self.btnFC.place(relx=0.9, rely=0,relwidth=0.05,relheight=1)
             self.btnIluminacion.place(relx=0.95, rely=0,relwidth=0.05,relheight=1)
         else:
-            self.EtiquetaDeNombre.place(relx=0, rely=0,relwidth=0.4,relheight=1)
-            self.EtiquetaDeDatos.place(relx=0.4, rely=0,relwidth=0.6,relheight=1)
+            self.EtiquetaDeNombre.place(relx=0, rely=0,relwidth=0.3,relheight=1)
+            self.EtiquetaDeDatos.place(relx=0.3, rely=0,relwidth=0.7,relheight=1)
 
     def createCuadroClasificador(self):
         self.cuadroClasificador = tk.Frame(self)
@@ -201,7 +202,11 @@ class FrmImagen(tk.Frame):
             self.image = Image.open(filename)
             self.anchoImagen, self.altoImagen = self.image.size
             self.cargarImagen()
-            ##Crea elementos para trabajar la imagen##
+            # Abrir la imagen con rasterio
+            with rasterio.open(filename) as src:
+                self.transform = src.transform
+                self.crs = src.crs
+            #Crea elementos para trabajar la imagen
             self.ImagenCargada=True        
             self.createBarraSelecciones()
             self.createBarraDeDatos(self.gestorArchivos.getNombreImg(self.nombre))
@@ -210,13 +215,14 @@ class FrmImagen(tk.Frame):
             #self.mostrarCuadroClasificador()           
             self.handTool()
     def cargarImagen(self):
-        limX = (0,self.anchoImagen)
-        limY = (self.altoImagen,0)
-
         if hasattr(self, 'canvas'):
             limX=self.ax.get_xlim()
             limY=self.ax.get_ylim()
             self.canvas_widget.destroy()
+
+        if not hasattr(self, 'canvas') or self.gestorArchivos.getAbrirArchivo:
+            limX = (0,self.anchoImagen)
+            limY = (self.altoImagen,0)
 
         ##Configuracion de figura de mathplotlib##
         self.fig = Figure()
@@ -234,14 +240,26 @@ class FrmImagen(tk.Frame):
         self.canvas.mpl_connect("motion_notify_event", self.CoordenadasImagen)
 
     def CoordenadasImagen(self, event):
-        # Obtener las coordenadas del puntero
+        # Obtener las coordenadas locales del puntero
         self.x = round(event.xdata) if event.xdata is not None  else None
         self.y = round(event.ydata) if event.ydata is not None else None
+
+        #Obtiene el valor del pixel
+        if self.nombre== "FrameImagen2" and self.x >=0 and self.x<=self.anchoImagen and self.y >=0 and self.y<=self.altoImagen:    
+            self.value = round(self.image.getpixel((self.x,self.y)))
+        #Obtiene las coordenadas geograficas del pixel
+        self.lon, self.lat = self.transform * (self.x, self.y)
+        if self.crs == "EPSG:32616":
+            transformer = Transformer.from_crs('epsg:32616', 'epsg:4326')
+            self.lon, self.lat = transformer.transform(self.lon, self.lat)
+        self.lon = round(self.lon,6)
+        self.lat = round(self.lat,6)
+
         # Mostrar las coordenadas en la consola
         if self.nombre== "FrameImagen1":
-            self.datosPixel.set(f"Lon:--, Lat:--, x:{self.x}, y:{self.y}")
+            self.datosPixel.set(f"Lon:{self.lon}, Lat:{self.lat}, x:{self.x}, y:{self.y}")
         elif self.nombre== "FrameImagen2":
-            self.datosPixel.set(f"Value:--, Lon:--, Lat:--, x:{self.x}, y:{self.y}")
+            self.datosPixel.set(f"Value:{self.value}, Lon:{self.lon}, Lat:{self.lat}, x:{self.x}, y:{self.y}")
 
     ### Inicio funciones Zoom ###
     def zoomRuedaRaton(self, event):

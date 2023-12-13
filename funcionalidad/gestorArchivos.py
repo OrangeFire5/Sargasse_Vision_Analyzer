@@ -138,3 +138,5 @@ class GestorArchivos:
         return self.rutaImgBruta_img
     def getTipoImgBruta(self):
         return self.tipoImgBruta
+    def getAbrirArchivo(self):
+        return self.abrirArchivo
