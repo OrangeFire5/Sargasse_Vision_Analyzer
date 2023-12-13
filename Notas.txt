@@ -34,3 +34,4 @@ El aumento de iluminacion de una imagen se consigue reduciendo los bits del valo
 
 <-- Salida -->
 sentinel3: Imagen.tif con 21 bandas de 16bits(UInt)
+sentinel2: Imagen.tif con 12 banas de 16bits(UInt)
