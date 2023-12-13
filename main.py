@@ -24,7 +24,6 @@ controlador = Controller(app)
 gestorArchivos = GestorArchivos(controlador)
 BarraDeMenu(app,gestorArchivos)
 
-
 frameImagen1 = FrmImagen(app,controlador, gestorArchivos,"FrameImagen1")
 frameImagen1.grid(row=0, column=0, columnspan=3, sticky="nsew",padx=2,pady=2)
 frameImagen2 = FrmImagen(app,controlador,gestorArchivos,"FrameImagen2","Imagen Sentinel procesada","imgProcesada.png")

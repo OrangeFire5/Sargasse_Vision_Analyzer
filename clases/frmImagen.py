@@ -145,12 +145,12 @@ class FrmImagen(tk.Frame):
             #Boton RGB
             self.modoDeColoracion = "rgb"
             self.btnRGB = tk.Button(self.BarraDeDatos)
-            self.btnRGB.config(text="RGB", font=("Consolas", 7, "bold"), fg="white" ,bg="gray40",relief="sunken",cursor="arrow")
+            self.btnRGB.config(text="RGB", font=("Consolas", 7, "bold"), fg="white" ,bg="gray40",relief="sunken",cursor="arrow",command=self.cambiarArgb)
             self.btnRGB.place(relx=0.85, rely=0,relwidth=0.05,relheight=1)
 
             #Boton FC
             self.btnFC = tk.Button(self.BarraDeDatos)
-            self.btnFC.config(text="FC",font=("Consolas", 7, "bold"), bg="gray92", relief="raised",cursor="arrow")
+            self.btnFC.config(text="FC",font=("Consolas", 7, "bold"), bg="gray92", relief="raised",cursor="arrow",command=self.cambiarAfc)
             self.btnFC.place(relx=0.9, rely=0,relwidth=0.05,relheight=1)
 
             #Modos de iluminacion
@@ -383,8 +383,7 @@ class FrmImagen(tk.Frame):
 
         path = os.path.dirname(__file__)
         path = os.path.dirname(path)
-        path = os.path.join(path,"img")
-        path = os.path.join(path,"iconos")
+        path = os.path.join(path,"img/iconos")
 
         if tipoImgBruta=="SEN2":
             noIcon = self.modoIluminacion - 11
@@ -395,6 +394,20 @@ class FrmImagen(tk.Frame):
         self.btnIluminacion.config(image=self.iconIluminacion)
 
 
-    def cambiarRGBoFC(self):
-        exit
-
+    def cambiarArgb(self):
+        if not self.modoDeColoracion == "rgb":
+            self.modoDeColoracion = "rgb"
+            ruta = self.gestorArchivos.getRutaImgBruta_img()
+            self.image = Image.open(f'{ruta}/{self.modoDeColoracion}_{self.modoIluminacion}bits.tif')
+            self.cargarImagen()
+            self.btnRGB.config(fg="white",bg="gray40", relief="sunken")
+            self.btnFC.config(fg="black",bg="gray92",relief="raised")
+    
+    def cambiarAfc(self):
+        if not self.modoDeColoracion == "fc":
+            self.modoDeColoracion = "fc"
+            ruta = self.gestorArchivos.getRutaImgBruta_img()
+            self.image = Image.open(f'{ruta}/{self.modoDeColoracion}_{self.modoIluminacion}bits.tif')
+            self.cargarImagen()
+            self.btnFC.config(fg="white",bg="gray40", relief="sunken")
+            self.btnRGB.config(fg="black",bg="gray92",relief="raised")
