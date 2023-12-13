@@ -214,24 +214,26 @@ class FrmImagen(tk.Frame):
             self.ocultarCuadroClasificador()
             #self.mostrarCuadroClasificador()           
             self.handTool()
-    def cargarImagen(self):
-        if hasattr(self, 'canvas'):
+    def cargarImagen(self,conservarSize=False):
+        if conservarSize:
             limX=self.ax.get_xlim()
             limY=self.ax.get_ylim()
-            self.canvas_widget.destroy()
-
-        if not hasattr(self, 'canvas') or self.gestorArchivos.getAbrirArchivo:
+        else:
             limX = (0,self.anchoImagen)
             limY = (self.altoImagen,0)
+        
+        if hasattr(self, 'canvas'):
+            self.canvas_widget.destroy()
+
 
         ##Configuracion de figura de mathplotlib##
         self.fig = Figure()
         self.ax = self.fig.add_subplot(111)
         self.ax.set_adjustable("datalim")
         self.ax.set_position([0, 0, 1, 1])
+        self.ax.imshow(self.image)
         self.ax.set_xlim(limX)
-        self.ax.set_ylim(limY)
-        self.ax.imshow(self.image)  
+        self.ax.set_ylim(limY)  
         ## Crear un lienzo de Matplotlib en el frame##
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.contenedorImage)
         self.canvas_widget = self.canvas.get_tk_widget()
@@ -247,6 +249,8 @@ class FrmImagen(tk.Frame):
         #Obtiene el valor del pixel
         if self.nombre== "FrameImagen2" and self.x >=0 and self.x<=self.anchoImagen and self.y >=0 and self.y<=self.altoImagen:    
             self.value = round(self.image.getpixel((self.x,self.y)))
+        else:
+            self.value = 0
         #Obtiene las coordenadas geograficas del pixel
         self.lon, self.lat = self.transform * (self.x, self.y)
         if self.crs == "EPSG:32616":
@@ -387,7 +391,7 @@ class FrmImagen(tk.Frame):
             self.modoIluminacion = 14
         
         self.image = Image.open(f'{ruta}/{self.modoDeColoracion}_{self.modoIluminacion}bits.tif')
-        self.cargarImagen()
+        self.cargarImagen(True)
 
         path = os.path.dirname(__file__)
         path = os.path.dirname(path)
@@ -406,7 +410,7 @@ class FrmImagen(tk.Frame):
             self.modoDeColoracion = "rgb"
             ruta = self.gestorArchivos.getRutaImgBruta_img()
             self.image = Image.open(f'{ruta}/{self.modoDeColoracion}_{self.modoIluminacion}bits.tif')
-            self.cargarImagen()
+            self.cargarImagen(True)
             self.btnRGB.config(fg="white",bg="gray40", relief="sunken")
             self.btnFC.config(fg="black",bg="gray92",relief="raised")
     
@@ -415,6 +419,6 @@ class FrmImagen(tk.Frame):
             self.modoDeColoracion = "fc"
             ruta = self.gestorArchivos.getRutaImgBruta_img()
             self.image = Image.open(f'{ruta}/{self.modoDeColoracion}_{self.modoIluminacion}bits.tif')
-            self.cargarImagen()
+            self.cargarImagen(True)
             self.btnFC.config(fg="white",bg="gray40", relief="sunken")
             self.btnRGB.config(fg="black",bg="gray92",relief="raised")
