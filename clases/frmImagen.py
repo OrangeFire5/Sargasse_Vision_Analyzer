@@ -6,7 +6,6 @@ import matplotlib.image as mpimg
 from tkinter import filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
-#from controller import *
 
 class FrmImagen(tk.Frame):
     def __init__(self, master = None, controlador=None,gestorArchivos=None, nombre="", textoLabel = "Imagen Sentinel a color real", image = "imgColorReal.png"):
@@ -35,8 +34,7 @@ class FrmImagen(tk.Frame):
     def createIcono(self,image):
         path = os.path.dirname(__file__)
         path = os.path.dirname(path)
-        path = os.path.join(path,"img")
-        path = os.path.join(path,"iconos")
+        path = os.path.join(path,"img/iconos")
         path = os.path.join(path,image)
 
         self.imgenOriginal = Image.open(path).resize((100,100))
@@ -64,8 +62,7 @@ class FrmImagen(tk.Frame):
         #Rutas
         path = os.path.dirname(__file__)
         path = os.path.dirname(path)
-        path = os.path.join(path,"img")
-        path = os.path.join(path,"iconos")
+        path = os.path.join(path,"img/iconos")
 
         #Puntero - 0
         icono = Image.open(os.path.join(path,"puntero.png")).resize((15,15))
@@ -120,64 +117,48 @@ class FrmImagen(tk.Frame):
         self.BarraDeDatos = tk.Frame(self)
         self.BarraDeDatos.config(background="gray",relief=None)
         self.BarraDeDatos.place(relx=0, rely=0.935,relwidth=1,relheight=0.065)
+        
+        #Etiquetas de nombre
+        self.EtiquetaDeNombre = tk.Label(self.BarraDeDatos)
+        self.datosPixel = tk.StringVar()
+        self.datosPixel.set(nombre)
+        self.EtiquetaDeNombre.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.W)
+
+        #Etiquetas de datos
+        self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos)
+        self.datosPixel = tk.StringVar()
+        self.datosPixel.set("Lon:--, Lat:--, x:--, y:--")
+        self.EtiquetaDeDatos.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.E)
+
+        #Rutas
+        path = os.path.dirname(__file__)
+        path = os.path.dirname(path)
+        path = os.path.join(path,"img/iconos")
+        #Boton RGB
+        self.modoDeColoracion = "rgb"
+        self.btnRGB = tk.Button(self.BarraDeDatos)
+        self.btnRGB.config(text="RGB", font=("Consolas", 7, "bold"), fg="white" ,bg="gray40",relief="sunken",cursor="arrow",command=self.cambiarArgb)
+
+        #Boton FC
+        self.btnFC = tk.Button(self.BarraDeDatos)
+        self.btnFC.config(text="FC",font=("Consolas", 7, "bold"), bg="gray92", relief="raised",cursor="arrow",command=self.cambiarAfc)
+
+        #Modos de iluminacion
+        self.modoIluminacion = 12 if self.gestorArchivos.getTipoImgBruta()=="SEN2" else 14
+        icono = Image.open(os.path.join(path,"sol1.png")).resize((14,14))
+        self.iconIluminacion = ImageTk.PhotoImage(icono)
+        self.btnIluminacion = tk.Button(self.BarraDeDatos)
+        self.btnIluminacion.config(image=self.iconIluminacion, bg="gray92", relief="raised",cursor="arrow",command=self.cambiarModoIluminacion)
 
         if self.nombre == "FrameImagen1":
-            #Etiquetas de nombre
-            self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos)
-            self.datosPixel = tk.StringVar()
-            self.datosPixel.set(nombre)
-            self.EtiquetaDeDatos.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.W)
-            self.EtiquetaDeDatos.place(relx=0, rely=0,relwidth=0.3,relheight=1)
-
-            #Etiquetas de datos
-            self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos)
-            self.datosPixel = tk.StringVar()
-            self.datosPixel.set("Lon:--, Lat:--, x:--, y:--")
-            self.EtiquetaDeDatos.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.E)
+            self.EtiquetaDeNombre.place(relx=0, rely=0,relwidth=0.3,relheight=1)
             self.EtiquetaDeDatos.place(relx=0.3, rely=0,relwidth=0.55,relheight=1)
-
-            #Rutas
-            path = os.path.dirname(__file__)
-            path = os.path.dirname(path)
-            path = os.path.join(path,"img")
-            path = os.path.join(path,"iconos")
-
-            #Boton RGB
-            self.modoDeColoracion = "rgb"
-            self.btnRGB = tk.Button(self.BarraDeDatos)
-            self.btnRGB.config(text="RGB", font=("Consolas", 7, "bold"), fg="white" ,bg="gray40",relief="sunken",cursor="arrow",command=self.cambiarArgb)
             self.btnRGB.place(relx=0.85, rely=0,relwidth=0.05,relheight=1)
-
-            #Boton FC
-            self.btnFC = tk.Button(self.BarraDeDatos)
-            self.btnFC.config(text="FC",font=("Consolas", 7, "bold"), bg="gray92", relief="raised",cursor="arrow",command=self.cambiarAfc)
             self.btnFC.place(relx=0.9, rely=0,relwidth=0.05,relheight=1)
-
-            #Modos de iluminacion
-            if self.gestorArchivos.getTipoImgBruta()=="SEN2":
-                self.modoIluminacion = 12
-            else:
-                self.modoIluminacion = 14
-            icono = Image.open(os.path.join(path,"sol1.png")).resize((14,14))
-            self.iconIluminacion = ImageTk.PhotoImage(icono)
-            self.btnIluminacion = tk.Button(self.BarraDeDatos)
-            self.btnIluminacion.config(image=self.iconIluminacion, bg="gray92", relief="raised",cursor="arrow",command=self.cambiarModoIluminacion)
             self.btnIluminacion.place(relx=0.95, rely=0,relwidth=0.05,relheight=1)
         else:
-            #Etiquetas de nombre
-            self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos)
-            self.datosPixel = tk.StringVar()
-            self.datosPixel.set(nombre)
-            self.EtiquetaDeDatos.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.W)
-            self.EtiquetaDeDatos.place(relx=0, rely=0,relwidth=0.4,relheight=1)
-
-            #Etiquetas de datos
-            self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos)
-            self.datosPixel = tk.StringVar()
-            self.datosPixel.set("Value:--, Lon:--, Lat:--, x:--, y:--")
-            self.EtiquetaDeDatos.config(bg="lightgrey", textvariable=self.datosPixel, anchor=tk.E)
+            self.EtiquetaDeNombre.place(relx=0, rely=0,relwidth=0.4,relheight=1)
             self.EtiquetaDeDatos.place(relx=0.4, rely=0,relwidth=0.6,relheight=1)
-
 
     def createCuadroClasificador(self):
         self.cuadroClasificador = tk.Frame(self)
@@ -218,6 +199,7 @@ class FrmImagen(tk.Frame):
             self.contenedorImage.place(relx=0,rely=0,relwidth=1,relheight=0.935)
             ##Abre imagen##
             self.image = Image.open(filename)
+            self.anchoImagen, self.altoImagen = self.image.size
             self.cargarImagen()
             ##Crea elementos para trabajar la imagen##
             self.ImagenCargada=True        
@@ -228,16 +210,21 @@ class FrmImagen(tk.Frame):
             #self.mostrarCuadroClasificador()           
             self.handTool()
     def cargarImagen(self):
+        limX = (0,self.anchoImagen)
+        limY = (self.altoImagen,0)
+
         if hasattr(self, 'canvas'):
+            limX=self.ax.get_xlim()
+            limY=self.ax.get_ylim()
             self.canvas_widget.destroy()
-        self.anchoImagen, self.altoImagen = self.image.size
+
         ##Configuracion de figura de mathplotlib##
         self.fig = Figure()
         self.ax = self.fig.add_subplot(111)
         self.ax.set_adjustable("datalim")
         self.ax.set_position([0, 0, 1, 1])
-        self.ax.set_xlim(0,self.anchoImagen)
-        self.ax.set_ylim(self.altoImagen, 0)
+        self.ax.set_xlim(limX)
+        self.ax.set_ylim(limY)
         self.ax.imshow(self.image)  
         ## Crear un lienzo de Matplotlib en el frame##
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.contenedorImage)
@@ -349,6 +336,7 @@ class FrmImagen(tk.Frame):
                 exit
         self.herramientaSeleccionada = ""
         self.config(cursor="arrow")
+
     def activarHerramienta(self, herramienta):
         self.desactivarHerramienta()
         match herramienta:
@@ -373,11 +361,13 @@ class FrmImagen(tk.Frame):
     def cambiarModoIluminacion(self):
         ruta = self.gestorArchivos.getRutaImgBruta_img()
         tipoImgBruta = self.gestorArchivos.getTipoImgBruta()
+        
         self.modoIluminacion += 1
         if self.modoIluminacion > 14 and tipoImgBruta =="SEN2":
             self.modoIluminacion = 12
         if self.modoIluminacion > 16 and tipoImgBruta=="SEN3":
             self.modoIluminacion = 14
+        
         self.image = Image.open(f'{ruta}/{self.modoDeColoracion}_{self.modoIluminacion}bits.tif')
         self.cargarImagen()
 
@@ -392,7 +382,6 @@ class FrmImagen(tk.Frame):
         icono = Image.open(os.path.join(path,f"sol{noIcon}.png")).resize((14,14))
         self.iconIluminacion = ImageTk.PhotoImage(icono)
         self.btnIluminacion.config(image=self.iconIluminacion)
-
 
     def cambiarArgb(self):
         if not self.modoDeColoracion == "rgb":
