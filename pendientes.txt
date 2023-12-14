@@ -1,0 +1,2 @@
+self.canvas.mpl_connect('pick_event',fuction) 
+- Revisar este evento para ver si puede ser utilizado para la modificacion de areas 

@@ -2,10 +2,12 @@
 import os
 import tkinter as tk
 import rasterio
+import matplotlib.patches as patches
 
 from PIL import ImageTk, Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+
 from pyproj import Transformer
 
 class FrmImagen(tk.Frame):
@@ -65,12 +67,14 @@ class FrmImagen(tk.Frame):
         path = os.path.dirname(path)
         path = os.path.join(path,"img/iconos")
 
-        #Puntero - 0
+        #Pointer - 0
+        self.rectContorno = None
+        self.rectRelleno =None
         icono = Image.open(os.path.join(path,"puntero.png")).resize((15,15))
-        self.iconPuntero = ImageTk.PhotoImage(icono)
-        self.btnPuntero = tk.Button(self.BarraSelecciones)
-        self.btnPuntero.config(image=self.iconPuntero)
-        self.btnPuntero.place(relx=0.06, rely=0.02, relwidth=0.9,relheight=0.12)
+        self.iconPointer = ImageTk.PhotoImage(icono)
+        self.btnPointer = tk.Button(self.BarraSelecciones)
+        self.btnPointer.config(image=self.iconPointer,command=self.pointerTool)
+        self.btnPointer.place(relx=0.06, rely=0.02, relwidth=0.9,relheight=0.12)
         
         #Hand - 1
         icono = Image.open(os.path.join(path,"hand.png")).resize((15,15))
@@ -258,13 +262,12 @@ class FrmImagen(tk.Frame):
             self.lon, self.lat = transformer.transform(self.lon, self.lat)
         self.lon = round(self.lon,6)
         self.lat = round(self.lat,6)
-
         # Mostrar las coordenadas en la consola
         if self.nombre== "FrameImagen1":
             self.datosPixel.set(f"Lon:{self.lon}, Lat:{self.lat}, x:{self.x}, y:{self.y}")
         elif self.nombre== "FrameImagen2":
             self.datosPixel.set(f"Value:{self.value}, Lon:{self.lon}, Lat:{self.lat}, x:{self.x}, y:{self.y}")
-
+    
     ### Inicio funciones Zoom ###
     def zoomRuedaRaton(self, event):
         zoom_factor = 1.2 if event.delta <= 0 else (1/1.2)
@@ -311,8 +314,58 @@ class FrmImagen(tk.Frame):
         if self.sincronizar:
             self.controller.ajustarVista(self.nombre,limX,limY)
         self.canvas.draw()
+    
+    def trazarSeleccion(self,event,x=None,y=None):
+        if self.rectRelleno is not None:
+            self.rectRelleno.remove()
+        if self.rectContorno is not None:
+            self.rectContorno.remove()
+        factor_x = (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])*0.05
+        factor_y = (self.ax.get_ylim()[0] - self.ax.get_ylim()[1])*0.05
+        factor = factor_x if factor_x < factor_y else factor_y
+        factor = factor if factor > 1 else 0.5
+        x1 = (self.x) - factor
+        y1 = (self.y) - factor
+        if x == None and y == None:
+            x=self.x
+            y=self.y
+        self.rectContorno = patches.Rectangle((x1, y1), factor*2, factor*2, linewidth=1, edgecolor='r',fc='none')
+        self.rectRelleno = patches.Rectangle((x -0.5, y-0.5), 1, 1, linewidth=1, edgecolor='none', fc="green", alpha=0.1)
+        self.ax.add_patch(self.rectRelleno)
+        self.ax.add_patch(self.rectContorno)
+        self.canvas.draw()
+        self.idDraw_Event=self.canvas.mpl_connect('draw_event',self.ajustarContornoDeSeleccion)
+        
+    def ajustarContornoDeSeleccion(self,event):
+        if self.rectContorno is not None:
+            self.rectContorno.remove()
+            factor_x = (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])*0.05
+            factor_y = (self.ax.get_ylim()[0] - self.ax.get_ylim()[1])*0.05
+
+            factor = factor_x if factor_x < factor_y else factor_y
+            factor = factor if factor > 1 else 0.5
+            x = (self.rectRelleno.get_x()+0.5) - factor
+            y = (self.rectRelleno.get_y()+0.5)  - factor
+            self.rectContorno = patches.Rectangle((x, y), factor*2, factor*2, linewidth=1, edgecolor='r',fc='none')
+            self.ax.add_patch(self.rectContorno)
+
+    def eliminarSeleccion(self,event):    
+        if self.rectContorno is not None:
+            self.canvas.mpl_disconnect(self.idDraw_Event)
+            self.rectContorno.remove()
+            self.rectContorno = None
+        if self.rectRelleno is not None:
+            self.rectRelleno.remove()
+            self.rectRelleno = None
+        self.canvas.draw()
 
  ### Botones de tools ###  
+    def pointerTool(self):
+        if self.herramientaSeleccionada == "Pointer":
+            self.desactivarHerramienta()
+        else:
+            self.activarHerramienta("Pointer")  
+        exit
     def handTool(self):
         if self.herramientaSeleccionada == "Hand":
             self.desactivarHerramienta()
@@ -339,17 +392,47 @@ class FrmImagen(tk.Frame):
             self.controller.sincronizarTool(self.nombre)
 
  ### Controladores de tools ###           
+    def activarHerramienta(self, herramienta):
+        self.desactivarHerramienta()
+        match herramienta:
+            case "Pointer":
+                self.canvas_widget.bind("<ButtonPress-1>", self.trazarSeleccion)
+                self.canvas_widget.bind("<ButtonPress-3>", self.eliminarSeleccion)
+                self.btnPointer.config(bg="gray40",relief="sunken")
+                self.config(cursor="arrow")
+            case "Hand":
+                self.canvas_widget.bind("<ButtonPress-1>", self.click)
+                self.canvas_widget.bind("<B1-Motion>", self.arrastre)
+                self.btnHand.config(bg="gray40",relief="sunken")
+                self.config(cursor="hand2")
+            case "ZoomMas":
+                self.canvas_widget.bind("<ButtonRelease-1>", self.zoomMas)
+                self.btnAumentoZoom.config(bg="gray40",relief="sunken")
+                self.config(cursor="plus")
+            case "ZoomMenos":
+                self.canvas_widget.bind("<ButtonRelease-1>", self.zoomMenos)
+                self.btnDiminuyeZoom.config(bg="gray40",relief="sunken")
+                self.config(cursor="cross_reverse")
+            case "":
+                exit
+        self.herramientaSeleccionada = herramienta
+
+
     def desactivarHerramienta(self):
         match self.herramientaSeleccionada:
+            case "Pointer":
+                self.canvas_widget.unbind("<ButtonPress-1>")
+                self.canvas_widget.unbind("<ButtonPress-3>")
+                self.btnPointer.config(bg="gray92", relief="raised")
             case "Hand":
                 self.canvas_widget.unbind("<ButtonPress-1>")
                 self.canvas_widget.unbind("<B1-Motion>")
                 self.btnHand.config(bg="gray92", relief="raised")
             case "ZoomMas":
-                self.canvas_widget.unbind("<ButtonPress-1>")
+                self.canvas_widget.unbind("<ButtonRelease-1>")
                 self.btnAumentoZoom.config(bg="gray92", relief="raised")
             case "ZoomMenos":
-                self.canvas_widget.unbind("<ButtonPress-1>")
+                self.canvas_widget.unbind("<ButtonRelease-1>")
                 self.btnDiminuyeZoom.config(bg="gray92", relief="raised")
             case "ZoomMenos":
                 self.canvas_widget.unbind("<ButtonPress-1>")
@@ -358,26 +441,6 @@ class FrmImagen(tk.Frame):
                 exit
         self.herramientaSeleccionada = ""
         self.config(cursor="arrow")
-
-    def activarHerramienta(self, herramienta):
-        self.desactivarHerramienta()
-        match herramienta:
-            case "Hand":
-                self.canvas_widget.bind("<ButtonPress-1>", self.click)
-                self.canvas_widget.bind("<B1-Motion>", self.arrastre)
-                self.btnHand.config(bg="gray40",relief="sunken")
-                self.config(cursor="hand2")
-            case "ZoomMas":
-                self.canvas_widget.bind("<ButtonPress-1>", self.zoomMas)
-                self.btnAumentoZoom.config(bg="gray40",relief="sunken")
-                self.config(cursor="plus")
-            case "ZoomMenos":
-                self.canvas_widget.bind("<ButtonPress-1>", self.zoomMenos)
-                self.btnDiminuyeZoom.config(bg="gray40",relief="sunken")
-                self.config(cursor="cross_reverse")
-            case "":
-                exit
-        self.herramientaSeleccionada = herramienta
 
     #Funciones de barra de datos
     def cambiarModoIluminacion(self):
