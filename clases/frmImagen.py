@@ -105,10 +105,15 @@ class FrmImagen(tk.Frame):
         self.btnAjusteVista.place(relx=0.06, rely=0.58,relwidth=0.9,relheight=0.12)
 
         #Area - 5 
+        self.area = None
+        self.pointersArea = []
+        self.vertice = None
+        self.Areas=[]
+        self.trazandoArea = False
         icono = Image.open(os.path.join(path,"area.png")).resize((15,15))
         self.iconArea = ImageTk.PhotoImage(icono)
         self.btnArea = tk.Button(self.BarraSelecciones)
-        self.btnArea.config(image =self.iconArea)
+        self.btnArea.config(image =self.iconArea, command=self.areaTool)
         self.btnArea.place(relx=0.06, rely=0.72,relwidth=0.9,relheight=0.12)
 
         #Sincronizar imagenes - 6
@@ -267,7 +272,10 @@ class FrmImagen(tk.Frame):
             self.datosPixel.set(f"Lon:{self.lon}, Lat:{self.lat}, x:{self.x}, y:{self.y}")
         elif self.nombre== "FrameImagen2":
             self.datosPixel.set(f"Value:{self.value}, Lon:{self.lon}, Lat:{self.lat}, x:{self.x}, y:{self.y}")
-    
+        
+        if self.trazandoArea:
+            self.actualizarAreaDeConstruccion()
+
     ### Inicio funciones Zoom ###
     def zoomRuedaRaton(self, event):
         zoom_factor = 1.2 if event.delta <= 0 else (1/1.2)
@@ -358,6 +366,56 @@ class FrmImagen(tk.Frame):
             self.rectRelleno.remove()
             self.rectRelleno = None
         self.canvas.draw()
+ #Creacion de Areas#
+    def iniciarConstruccionArea(self,event):
+        if not self.trazandoArea:
+            x = round(self.x)
+            y = round(self.y)
+            factor_x = (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])*0.015
+            factor_y = (self.ax.get_ylim()[0] - self.ax.get_ylim()[1])*0.015
+            factor = factor_x if factor_x < factor_y else factor_y
+            factor = factor if factor > 1 else 0.5
+            self.vertice = patches.Circle((x,y), factor, edgecolor='black', facecolor='white')
+            self.ax.add_patch(self.vertice)
+            self.pointersArea.append((x,y))
+            self.canvas.draw()
+            self.trazandoArea = True
+        else:
+            self.construirArea()
+            self.trazandoArea = False
+
+    def actualizarAreaDeConstruccion(self):
+        x2 = round(self.x)
+        y2 = round(self.y)
+        x1, y1 = self.pointersArea[0]
+        if self.area is not None:
+            self.area.remove()
+        self.area = patches.Polygon([(x1,y1),(x1,y2),(x2,y2),(x2,y1)], closed=True, edgecolor='dimgrey', facecolor='white', alpha=0.5, linestyle='dashed',linewidth=2)
+        self.ax.add_patch(self.area)
+        self.canvas.draw()
+
+    def construirArea(self,event=None):
+        x2 = round(self.x)
+        y2 = round(self.y)
+        x1, y1 = self.pointersArea[0]
+        self.pointersArea.append((x1,y2))
+        self.pointersArea.append((x2,y2))
+        self.pointersArea.append((x2,y1))
+        self.Areas.append(patches.Polygon(self.pointersArea, closed=True, edgecolor='r', facecolor='red', alpha=0.3,linewidth=2))
+        self.ax.add_patch(self.Areas[-1])
+        self.cancelarContruccionArea()
+        self.canvas.draw()
+        
+    def cancelarContruccionArea(self,event=None):
+        self.trazandoArea =False
+        if self.area is not None:
+            self.area.remove()
+            self.area = None
+            self.pointersArea.clear()
+        if self.vertice is not None:
+            self.vertice.remove()
+            self.vertice = None
+        self.canvas.draw()
 
  ### Botones de tools ###  
     def pointerTool(self):
@@ -381,6 +439,11 @@ class FrmImagen(tk.Frame):
             self.desactivarHerramienta()
         else:
             self.activarHerramienta("ZoomMenos")
+    def areaTool(self):
+        if self.herramientaSeleccionada == "Area":
+            self.desactivarHerramienta()
+        else:
+            self.activarHerramienta("Area")
     def sincronizarTool(self):
         if self.controller.existeImagenEnOtroFrame(self.nombre):
             if self.sincronizar:
@@ -390,6 +453,7 @@ class FrmImagen(tk.Frame):
                 self.btnSincronizar.config(bg="gray40",relief="sunken")
                 self.sincronizar = True
             self.controller.sincronizarTool(self.nombre)
+            
 
  ### Controladores de tools ###           
     def activarHerramienta(self, herramienta):
@@ -413,6 +477,10 @@ class FrmImagen(tk.Frame):
                 self.canvas_widget.bind("<ButtonRelease-1>", self.zoomMenos)
                 self.btnDiminuyeZoom.config(bg="gray40",relief="sunken")
                 self.config(cursor="cross_reverse")
+            case "Area":            
+                self.canvas_widget.bind("<ButtonRelease-1>",self.iniciarConstruccionArea)
+                self.canvas_widget.bind("<ButtonPress-3>", self.cancelarContruccionArea)
+                self.btnArea.config(bg="gray40", relief="sunken")
             case "":
                 exit
         self.herramientaSeleccionada = herramienta
@@ -437,6 +505,11 @@ class FrmImagen(tk.Frame):
             case "ZoomMenos":
                 self.canvas_widget.unbind("<ButtonPress-1>")
                 self.btnDiminuyeZoom.config(bg="gray92", relief="raised")
+            case "Area":
+                self.canvas_widget.unbind("<ButtonRelease-1>")
+                self.canvas_widget.unbind("<ButtonPress-3>")
+                self.cancelarContruccionArea()
+                self.btnArea.config(bg="gray92", relief="raised")
             case "":
                 exit
         self.herramientaSeleccionada = ""
