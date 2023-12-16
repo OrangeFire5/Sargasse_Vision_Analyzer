@@ -107,7 +107,6 @@ class FrmImagen(tk.Frame):
         #Area - 5 
         self.area = None
         self.pointersArea = []
-        self.vertice = None
         self.Areas=[]
         self.trazandoArea = False
         icono = Image.open(os.path.join(path,"area.png")).resize((15,15))
@@ -295,6 +294,15 @@ class FrmImagen(tk.Frame):
         if self.sincronizar:
             self.controller.ajustarVista(self.nombre,limX,limY)
         self.canvas.draw()
+    def zoomManual(self):
+        x2, y2 =self.x,self.y
+        x1, y1 = self.pointersArea[0]
+        x = (x1,x2) if x1 < x2 else (x2,x1)
+        y = (y2,y1) if y1 < y2 else (y1,y2)
+        self.ax.set_xlim(x)
+        self.ax.set_ylim(y)
+        self.cancelarContruccionArea()
+        self.canvas.draw()
     ### Fin de funciones Zoom ###
 
     def ajustarVista(self):
@@ -366,23 +374,30 @@ class FrmImagen(tk.Frame):
             self.rectRelleno.remove()
             self.rectRelleno = None
         self.canvas.draw()
+
  #Creacion de Areas#
     def iniciarConstruccionArea(self,event):
         if not self.trazandoArea:
             x = round(self.x)
             y = round(self.y)
-            factor_x = (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])*0.015
-            factor_y = (self.ax.get_ylim()[0] - self.ax.get_ylim()[1])*0.015
-            factor = factor_x if factor_x < factor_y else factor_y
-            factor = factor if factor > 1 else 0.5
-            self.vertice = patches.Circle((x,y), factor, edgecolor='black', facecolor='white')
-            self.ax.add_patch(self.vertice)
             self.pointersArea.append((x,y))
             self.canvas.draw()
             self.trazandoArea = True
+            if self.herramientaSeleccionada == "ZoomMas":
+                self.canvas_widget.unbind("<ButtonPress-1>")
+                self.canvas_widget.unbind("<ButtonPress-3>")
+                self.canvas_widget.bind("<ButtonPress-1>", self.iniciarConstruccionArea)
+                self.canvas_widget.bind("<ButtonPress-3>", self.iniciarConstruccionArea)            
         else:
-            self.construirArea()
             self.trazandoArea = False
+            if self.herramientaSeleccionada == "ZoomMas":
+                self.canvas_widget.unbind("<ButtonPress-1>")
+                self.canvas_widget.unbind("<ButtonPress-3>")
+                self.canvas_widget.bind("<ButtonPress-1>", self.zoomMas)
+                self.canvas_widget.bind("<ButtonPress-3>", self.iniciarConstruccionArea)
+                self.zoomManual()
+            else:
+                self.construirArea()
 
     def actualizarAreaDeConstruccion(self):
         x2 = round(self.x)
@@ -407,14 +422,16 @@ class FrmImagen(tk.Frame):
         self.canvas.draw()
         
     def cancelarContruccionArea(self,event=None):
+        if self.herramientaSeleccionada == "ZoomMas":
+                self.canvas_widget.unbind("<ButtonPress-1>")
+                self.canvas_widget.unbind("<ButtonPress-3>")
+                self.canvas_widget.bind("<ButtonPress-1>", self.zoomMas)
+                self.canvas_widget.bind("<ButtonPress-3>", self.iniciarConstruccionArea)
         self.trazandoArea =False
         if self.area is not None:
             self.area.remove()
             self.area = None
             self.pointersArea.clear()
-        if self.vertice is not None:
-            self.vertice.remove()
-            self.vertice = None
         self.canvas.draw()
 
  ### Botones de tools ###  
@@ -423,7 +440,6 @@ class FrmImagen(tk.Frame):
             self.desactivarHerramienta()
         else:
             self.activarHerramienta("Pointer")  
-        exit
     def handTool(self):
         if self.herramientaSeleccionada == "Hand":
             self.desactivarHerramienta()
@@ -454,13 +470,12 @@ class FrmImagen(tk.Frame):
                 self.sincronizar = True
             self.controller.sincronizarTool(self.nombre)
             
-
  ### Controladores de tools ###           
     def activarHerramienta(self, herramienta):
         self.desactivarHerramienta()
         match herramienta:
             case "Pointer":
-                self.canvas_widget.bind("<ButtonPress-1>", self.trazarSeleccion)
+                self.canvas_widget.bind("<Double-Button-1>", self.trazarSeleccion)
                 self.canvas_widget.bind("<ButtonPress-3>", self.eliminarSeleccion)
                 self.btnPointer.config(bg="gray40",relief="sunken")
                 self.config(cursor="arrow")
@@ -470,16 +485,19 @@ class FrmImagen(tk.Frame):
                 self.btnHand.config(bg="gray40",relief="sunken")
                 self.config(cursor="hand2")
             case "ZoomMas":
-                self.canvas_widget.bind("<ButtonRelease-1>", self.zoomMas)
+                self.canvas_widget.bind("<ButtonPress-1>", self.zoomMas)
+                self.canvas_widget.bind("<ButtonPress-3>", self.iniciarConstruccionArea)
+                self.canvas_widget.bind("<Escape>", self.cancelarContruccionArea)      
                 self.btnAumentoZoom.config(bg="gray40",relief="sunken")
                 self.config(cursor="plus")
             case "ZoomMenos":
-                self.canvas_widget.bind("<ButtonRelease-1>", self.zoomMenos)
+                self.canvas_widget.bind("<ButtonPress-1>", self.zoomMenos)
                 self.btnDiminuyeZoom.config(bg="gray40",relief="sunken")
                 self.config(cursor="cross_reverse")
             case "Area":            
-                self.canvas_widget.bind("<ButtonRelease-1>",self.iniciarConstruccionArea)
+                self.canvas_widget.bind("<ButtonPress-1>",self.iniciarConstruccionArea)
                 self.canvas_widget.bind("<ButtonPress-3>", self.cancelarContruccionArea)
+                self.canvas_widget.bind("<Escape>", self.cancelarContruccionArea)      
                 self.btnArea.config(bg="gray40", relief="sunken")
             case "":
                 exit
@@ -489,7 +507,7 @@ class FrmImagen(tk.Frame):
     def desactivarHerramienta(self):
         match self.herramientaSeleccionada:
             case "Pointer":
-                self.canvas_widget.unbind("<ButtonPress-1>")
+                self.canvas_widget.unbind("<Double-Button-1>")
                 self.canvas_widget.unbind("<ButtonPress-3>")
                 self.btnPointer.config(bg="gray92", relief="raised")
             case "Hand":
@@ -498,16 +516,16 @@ class FrmImagen(tk.Frame):
                 self.btnHand.config(bg="gray92", relief="raised")
             case "ZoomMas":
                 self.canvas_widget.unbind("<ButtonRelease-1>")
+                self.canvas_widget.unbind("<ButtonPress-3>")
+                self.canvas_widget.unbind("<Escape>")    
                 self.btnAumentoZoom.config(bg="gray92", relief="raised")
-            case "ZoomMenos":
-                self.canvas_widget.unbind("<ButtonRelease-1>")
-                self.btnDiminuyeZoom.config(bg="gray92", relief="raised")
             case "ZoomMenos":
                 self.canvas_widget.unbind("<ButtonPress-1>")
                 self.btnDiminuyeZoom.config(bg="gray92", relief="raised")
             case "Area":
-                self.canvas_widget.unbind("<ButtonRelease-1>")
+                self.canvas_widget.unbind("<ButtonPress-1>")
                 self.canvas_widget.unbind("<ButtonPress-3>")
+                self.canvas_widget.unbind("<Escape>")    
                 self.cancelarContruccionArea()
                 self.btnArea.config(bg="gray92", relief="raised")
             case "":
