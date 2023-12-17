@@ -3,11 +3,14 @@ class Controller:
         self.master = master
         self.frmImagen1 = None
         self.frmImagen2 = None
+        self.frmTablaSelecciones = None
 
     def set_frmImagen1(self, frmImagen):
         self.frmImagen1 = frmImagen
     def set_frmImagen2(self, frmImagen):
         self.frmImagen2 = frmImagen
+    def set_frmTablaSelecciones(self, frmTablaSelecciones):
+        self.frmTablaSelecciones= frmTablaSelecciones
 
     ##  Sincronizar ##
     def existeImagenEnOtroFrame(self,nombre):
@@ -44,3 +47,8 @@ class Controller:
             self.frmImagen1.sincronizar = False
             self.frmImagen1.ajustarVista()
             self.frmImagen1.sincronizar = True
+    ## Sincronizar ##
+    def agregarAreaATablaSelecciones(self,ids,puntos,coord,choose="F+"):
+        self.frmTablaSelecciones.insertarDatos(ids,puntos,coord,choose)
+            
+

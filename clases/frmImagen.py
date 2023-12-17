@@ -260,20 +260,21 @@ class FrmImagen(tk.Frame):
         else:
             self.value = 0
         #Obtiene las coordenadas geograficas del pixel
-        self.lon, self.lat = self.transform * (self.x, self.y)
-        if self.crs == "EPSG:32616":
-            transformer = Transformer.from_crs('epsg:32616', 'epsg:4326')
-            self.lon, self.lat = transformer.transform(self.lon, self.lat)
-        self.lon = round(self.lon,6)
-        self.lat = round(self.lat,6)
+        coord = self.consultarCoord(self.x,self.y)
         # Mostrar las coordenadas en la consola
         if self.nombre== "FrameImagen1":
-            self.datosPixel.set(f"Lon:{self.lon}, Lat:{self.lat}, x:{self.x}, y:{self.y}")
+            self.datosPixel.set(f"Lat:{coord[0]}, Lon:{coord[1]}, x:{self.x}, y:{self.y}")
         elif self.nombre== "FrameImagen2":
-            self.datosPixel.set(f"Value:{self.value}, Lon:{self.lon}, Lat:{self.lat}, x:{self.x}, y:{self.y}")
+            self.datosPixel.set(f"Value:{self.value}, Lat:{coord[0]}, Lon:{coord[1]}, x:{self.x}, y:{self.y}")
         
         if self.trazandoArea:
             self.actualizarAreaDeConstruccion()
+    def consultarCoord(self,x,y):
+        lon, lat = self.transform * (x,y)
+        if self.crs == "EPSG:32616":
+            transformer = Transformer.from_crs('epsg:32616', 'epsg:4326')
+            lon, lat = transformer.transform(lon, lat)
+        return (round(lat,6),round(lon,6))
 
     ### Inicio funciones Zoom ###
     def zoomRuedaRaton(self, event):
@@ -413,11 +414,17 @@ class FrmImagen(tk.Frame):
         x2 = round(self.x)
         y2 = round(self.y)
         x1, y1 = self.pointersArea[0]
-        self.pointersArea.append((x1,y2))
-        self.pointersArea.append((x2,y2))
-        self.pointersArea.append((x2,y1))
-        self.Areas.append(patches.Polygon(self.pointersArea, closed=True, edgecolor='r', facecolor='red', alpha=0.3,linewidth=2))
+        xmin,xmax = (x1,x2) if x1<x2 else (x2,x1)
+        ymin,ymax = (y1,y2) if y1<y2 else (y2,y1)
+        puntos=[(xmin,ymin),(xmin,ymax),(xmax,ymax),(xmax,ymin)]
+        latmin,lonmin = self.consultarCoord(xmin,ymin)
+        latmax,lonmax = self.consultarCoord(xmax,ymax)
+        puntosDatos=f"({xmin},{ymin}),({xmin},{ymax}),({xmax},{ymax}),({xmax},{ymin})"
+        coord =f"({latmin},{lonmin}),({latmin},{lonmax}),({latmax},{lonmax}),({latmax},{lonmin})"
+        self.Areas.append(patches.Polygon(puntos, closed=True, edgecolor='r', facecolor='red', alpha=0.3,linewidth=2))
         self.ax.add_patch(self.Areas[-1])
+        
+        self.controller.agregarAreaATablaSelecciones(len(self.Areas),puntosDatos,coord,"F+")
         self.cancelarContruccionArea()
         self.canvas.draw()
         
