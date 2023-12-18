@@ -146,3 +146,6 @@ def construirImgYGeoRefSen3(rutaImgBruta_bands,rutaImgBruta_temp,rutaImgBruta_im
     lat2 = convert(lat2)
     gdal_translate_options = ['-of', 'GTiff', '-a_ullr',lon1, lat1, lon2, lat2, "-a_srs", "EPSG:4326"]
     gdal.Translate(pathImage, gdal.Open(pathGeo), options=gdal_translate_options)
+
+def procesarImagenBrutaSEN3(ruta,rutaImgBruta_bands,rutaImgBruta_temp,rutaImgBruta_img):
+    exit;

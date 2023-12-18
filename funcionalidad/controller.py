@@ -5,6 +5,7 @@ class Controller:
         self.frmImagen2 = None
         self.frmTablaSelecciones = None
         self.frmBotones = None
+        self.frmGestorArchivos =None
         self.frmArea = []
 
     def set_frmImagen1(self, frmImagen):
@@ -15,6 +16,8 @@ class Controller:
         self.frmTablaSelecciones= frmTablaSelecciones
     def set_frmBotones(self, frmBotones):
         self.frmBotones = frmBotones
+    def set_gestorArchivos(self,frmGestorArchivos):
+        self.frmGestorArchivos = frmGestorArchivos
 
     ##  Sincronizar ##
     def existeImagenEnOtroFrame(self,nombre):
@@ -65,9 +68,11 @@ class Controller:
         self.frmArea.append(nombre)
     def desactivarSelecciones(self): 
         self.frmTablaSelecciones.deseleccionar_todo()
-        self.desactivarBtnElinarSelecciones()
+        self.desactivarBtnEliminarSelecciones()
+        self.desactivarBtnExportarSeleccion()
     def activarModoEdicion(self,ids,color):
-        self.activarBtnElinarSelecciones()
+        self.activarBtnEliminarSelecciones()
+        self.activarBtnExportarSeleccion()
         if self.frmArea[ids] == "FrameImagen1": 
             self.frmImagen1.activarEdicionArea(ids,color)
         elif self.frmArea[ids] == "FrameImagen2":
@@ -83,11 +88,16 @@ class Controller:
         del self.frmArea[ids]
     def seleccionar(self,ids):
         self.frmTablaSelecciones.treeview.selection_set(ids)
-        self.activarBtnElinarSelecciones()
-    def activarBtnElinarSelecciones(self):
+        self.activarBtnEliminarSelecciones()
+        self.activarBtnExportarSeleccion()
+    def activarBtnEliminarSelecciones(self):
         self.frmBotones.btnElimnarSelecciones.config(state="active")
-    def desactivarBtnElinarSelecciones(self):
+    def desactivarBtnEliminarSelecciones(self):
         self.frmBotones.btnElimnarSelecciones.config(state="disabled")
+    def activarBtnExportarSeleccion(self):
+        self.frmBotones.btnExportarSeleccion.config(state="active")
+    def desactivarBtnExportarSeleccion(self):
+        self.frmBotones.btnExportarSeleccion.config(state="disabled")
 
             
 

@@ -88,7 +88,6 @@ class FrmTablaSelecciones(tk.Frame):
             i = int(self.treeview.item(item, "values")[0]) 
             if i > ids:
                 valores = list(self.treeview.item(item, "values"))
-                print(valores)
                 valores[0] = i-1
                 self.treeview.delete(i)
                 self.treeview.insert("", "end", values=valores,tags=("datos"), iid=i-1)

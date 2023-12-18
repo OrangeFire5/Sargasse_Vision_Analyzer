@@ -11,13 +11,13 @@ class FrmBotones(tk.Frame):
         self.createButton()
 
     def createButton(self):
-        self.btnGuardarArea =  tk.Button(self)
-        self.btnGuardarArea.config(text="Exportar\nSelecciones...")
-        self.btnGuardarArea.place(relx=0.05,rely=0.0625, relwidth=0.90, relheight=0.25)
+        self.btnExportarSelecciones =  tk.Button(self)
+        self.btnExportarSelecciones.config(text="Exportar\nSelecciones...",state="disabled")
+        self.btnExportarSelecciones.place(relx=0.05,rely=0.0625, relwidth=0.90, relheight=0.25)
 
-        self.btnGuardarSelecciones=  tk.Button(self)
-        self.btnGuardarSelecciones.config(text="Exportar\nSeleccion")
-        self.btnGuardarSelecciones.place(relx=0.05,rely=0.375,  relwidth=0.90, relheight=0.25)
+        self.btnExportarSeleccion=  tk.Button(self)
+        self.btnExportarSeleccion.config(text="Exportar\nSeleccion",state="disabled")
+        self.btnExportarSeleccion.place(relx=0.05,rely=0.375,  relwidth=0.90, relheight=0.25)
 
         self.btnElimnarSelecciones =  tk.Button(self)  
         #self.btnElimnarSelecciones =  tk.Button(self,bg="#B02525",fg="white", font=("Arial", 10, "bold"),state="disabled")

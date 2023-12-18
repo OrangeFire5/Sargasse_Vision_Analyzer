@@ -128,6 +128,10 @@ class GestorArchivos:
         print(f'Guadado en:{os.path.join(self.rutaProyecto,'datos.json')}')
         with open(os.path.join(self.rutaProyecto,'datos.json'), 'w') as archivo_json:
             json.dump(datos, archivo_json)
+
+
+    def exportarArea(self):
+        exit
             
     def getNombreImg(self,nombre):
         if nombre == "FrameImagen1":

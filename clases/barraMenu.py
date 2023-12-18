@@ -40,8 +40,8 @@ class BarraDeMenu(tk.Menu):
         self.menu_ayuda.add_command(label="Manual",accelerator="",command=self.prueba,compound=tk.LEFT)
         #Se agregan opciones al menu
         self.barra_menus.add_cascade(menu=self.menu_archivo, label="Archivo")
-        self.barra_menus.add_cascade(menu=self.menu_opciones, label="Opciones")
-        self.barra_menus.add_cascade(menu=self.menu_configuraciones, label="Configuraciones")
+        #self.barra_menus.add_cascade(menu=self.menu_opciones, label="Opciones")
+        #self.barra_menus.add_cascade(menu=self.menu_configuraciones, label="Configuraciones")
         self.barra_menus.add_cascade(menu=self.menu_ayuda, label="Ayuda")
         self.master.config(menu=self.barra_menus)
     def prueba(self):
