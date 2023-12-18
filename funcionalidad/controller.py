@@ -4,6 +4,8 @@ class Controller:
         self.frmImagen1 = None
         self.frmImagen2 = None
         self.frmTablaSelecciones = None
+        self.frmBotones = None
+        self.frmArea = []
 
     def set_frmImagen1(self, frmImagen):
         self.frmImagen1 = frmImagen
@@ -11,6 +13,8 @@ class Controller:
         self.frmImagen2 = frmImagen
     def set_frmTablaSelecciones(self, frmTablaSelecciones):
         self.frmTablaSelecciones= frmTablaSelecciones
+    def set_frmBotones(self, frmBotones):
+        self.frmBotones = frmBotones
 
     ##  Sincronizar ##
     def existeImagenEnOtroFrame(self,nombre):
@@ -47,8 +51,43 @@ class Controller:
             self.frmImagen1.sincronizar = False
             self.frmImagen1.ajustarVista()
             self.frmImagen1.sincronizar = True
-    ## Sincronizar ##
+    ## Fin - Sincronizar ##
+    #Funciones de manejo de Tabla de selecciones
     def agregarAreaATablaSelecciones(self,ids,puntos,coord,choose="F+"):
         self.frmTablaSelecciones.insertarDatos(ids,puntos,coord,choose)
+    def modificarPuntosTabla(self,ids,puntos):
+        self.frmTablaSelecciones.modificarPuntos(ids,puntos)
+    def modificarCoordTabla(self,ids,coord):
+        self.frmTablaSelecciones.modificarCoord(ids,coord)
+    def modificarChooseTabla(self,ids,choose):
+        self.frmTablaSelecciones.modificarChoose(ids,choose)
+    def set_frmArea(self,nombre):
+        self.frmArea.append(nombre)
+    def desactivarSelecciones(self): 
+        self.frmTablaSelecciones.deseleccionar_todo()
+        self.desactivarBtnElinarSelecciones()
+    def activarModoEdicion(self,ids,color):
+        self.activarBtnElinarSelecciones()
+        if self.frmArea[ids] == "FrameImagen1": 
+            self.frmImagen1.activarEdicionArea(ids,color)
+        elif self.frmArea[ids] == "FrameImagen2":
+            self.frmImagen2.activarEdicionArea(ids,color)
+    def eliminarSeleccion(self):
+        ids=self.frmTablaSelecciones.get_id_seleccionado()
+        self.frmTablaSelecciones.eliminarArea(ids)
+        ids=ids-1
+        if self.frmArea[ids] == "FrameImagen1": 
+            self.frmImagen1.eliminarSeleccion(ids)
+        elif self.frmArea[ids] == "FrameImagen2":
+            self.frmImagen2.eliminarSeleccion(ids)
+        del self.frmArea[ids]
+    def seleccionar(self,ids):
+        self.frmTablaSelecciones.treeview.selection_set(ids)
+        self.activarBtnElinarSelecciones()
+    def activarBtnElinarSelecciones(self):
+        self.frmBotones.btnElimnarSelecciones.config(state="active")
+    def desactivarBtnElinarSelecciones(self):
+        self.frmBotones.btnElimnarSelecciones.config(state="disabled")
+
             
 

@@ -1,2 +1,1 @@
-self.canvas.mpl_connect('pick_event',fuction) 
-- Revisar este evento para ver si puede ser utilizado para la modificacion de areas 
+Globalizar valores de factor_x y factor_y  en frmImagen.py
