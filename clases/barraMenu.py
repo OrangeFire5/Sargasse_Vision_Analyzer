@@ -33,7 +33,7 @@ class BarraDeMenu(tk.Menu):
         
         #Seccion Configuraciones
         self.menu_configuraciones = tk.Menu(self.barra_menus, tearoff=False)
-        self.menu_configuraciones.add_command(label="Color de Areas",accelerator="",command=self.prueba,compound=tk.LEFT)
+        self.menu_configuraciones.add_command(label="Color de Areas",accelerator="",command=self.gestorArchivos.menuColorAreas,compound=tk.LEFT)
         
         #Seccion ayuda
         self.menu_ayuda = tk.Menu(self.barra_menus, tearoff=False)

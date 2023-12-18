@@ -580,7 +580,7 @@ class FrmImagen(tk.Frame):
             xmax, ymax= round(xy[2][0]),round(xy[2][1])
             puntos = [(xmin,ymin),(xmin,ymax),(xmax,ymax),(xmax,ymin)]
             self.modoEdicion(puntos,area)
-    def eliminarSeleccion(self,ids):
+    def eliminarArea(self,ids):
         self.trazandoArea =False
         self.modificandoArea = False
         self.desactivarModoEdicion()

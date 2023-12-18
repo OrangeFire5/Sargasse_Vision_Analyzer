@@ -2,6 +2,7 @@ import os
 import zipfile
 import shutil
 import json
+import tkinter as tk
 
 from osgeo import gdal
 from tkinter import filedialog
@@ -129,6 +130,15 @@ class GestorArchivos:
         with open(os.path.join(self.rutaProyecto,'datos.json'), 'w') as archivo_json:
             json.dump(datos, archivo_json)
 
+    def menuColorAreas(self):
+        app = tk.Tk()
+        app.title("Colores de Area")
+        app.geometry("250x250")
+        app.iconbitmap("img/iconos/icon.ico")
+        tk.Label(text="Color de falso negativo(ColorFN/F-)")
+        tk.Label(text="Color de verdadero positivo(ColorTP/T+)")
+        tk.Label(text="Color de falso positivo(ColorFP/F+)")
+        app.mainloop()
 
     def exportarArea(self):
         exit

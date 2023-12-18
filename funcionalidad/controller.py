@@ -82,9 +82,9 @@ class Controller:
         self.frmTablaSelecciones.eliminarArea(ids)
         ids=ids-1
         if self.frmArea[ids] == "FrameImagen1": 
-            self.frmImagen1.eliminarSeleccion(ids)
+            self.frmImagen1.eliminarArea(ids)
         elif self.frmArea[ids] == "FrameImagen2":
-            self.frmImagen2.eliminarSeleccion(ids)
+            self.frmImagen2.eliminarArea(ids)
         del self.frmArea[ids]
     def seleccionar(self,ids):
         self.frmTablaSelecciones.treeview.selection_set(ids)
