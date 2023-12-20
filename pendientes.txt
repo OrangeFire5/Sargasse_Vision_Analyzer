@@ -7,3 +7,4 @@
         self.datosPixel.set(f"Value:{self.value}, Lat:{coord[0]}, Lon:{coord[1]}, x:{self.x}, y:{self.y}")
                                      ^^^^^^^^^^
     AttributeError: 'FrmImagen' object has no attribute 'value'
+-Implementar set_xy() para optimizar procesamiento de areas

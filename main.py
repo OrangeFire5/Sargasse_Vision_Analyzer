@@ -17,12 +17,13 @@ app.columnconfigure(0,weight=3)
 app.columnconfigure(1,weight=3)
 app.columnconfigure(2,weight=3)
 app.columnconfigure(3,weight=3)
+
 app.columnconfigure(4,weight=3)
 app.columnconfigure(5,weight=3)
 
 controlador = Controller(app)
 gestorArchivos = GestorArchivos(controlador)
-BarraDeMenu(app,gestorArchivos)
+BarraDeMenu(app,controlador, gestorArchivos)
 
 frameImagen1 = FrmImagen(app,controlador, gestorArchivos,"FrameImagen1")
 frameImagen1.grid(row=0, column=0, columnspan=3, sticky="nsew",padx=2,pady=2)

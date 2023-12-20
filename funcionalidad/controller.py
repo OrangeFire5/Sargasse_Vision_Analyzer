@@ -1,3 +1,4 @@
+from tkinter import filedialog
 class Controller:
     def __init__(self, master):
         self.master = master
@@ -70,6 +71,7 @@ class Controller:
         self.frmTablaSelecciones.insertarDatos(len(self.Areas),puntos,coord,choose)
         self.activarBtnEliminarSelecciones()
         self.activarBtnExportarSeleccion()
+        self.activarBtnExportarSelecciones()
 
     #Modo edicion#
     def desactivarSelecciones(self,newArea=False):
@@ -101,7 +103,7 @@ class Controller:
                 return
     # Eliminando #         
     def eliminarSeleccion(self):
-        ids=self.frmTablaSelecciones.get_id_seleccionado()
+        ids=self.get_Id_Seleccionado()
         self.frmTablaSelecciones.eliminarArea(ids)
         ids=ids-1
         self.Areas[ids][2].eliminarArea(self.Areas[ids][1])
@@ -116,7 +118,8 @@ class Controller:
             else: 
                 self.Areas[i][1]=frm2
                 frm2=frm2+1
-    
+        if len(self.Areas) == 0 :
+            self.desactivarBtnExportarSelecciones()
     #Colorear Areas#
     def recolorearAreas(self):
         if self.frmImagen1.EditMode:
@@ -153,6 +156,10 @@ class Controller:
         return self.frmGestorArchivos.colorFP
     
     #frmBotones#
+    def activarBtnExportarSelecciones(self):
+        self.frmBotones.btnExportarSelecciones.config(state="active")
+    def desactivarBtnExportarSelecciones(self):
+        self.frmBotones.btnExportarSelecciones.config(state="disabled")
     def activarBtnExportarSeleccion(self):
         self.frmBotones.btnExportarSeleccion.config(state="active")
     def desactivarBtnExportarSeleccion(self):
@@ -161,5 +168,39 @@ class Controller:
         self.frmBotones.btnElimnarSelecciones.config(state="active")
     def desactivarBtnEliminarSelecciones(self):
         self.frmBotones.btnElimnarSelecciones.config(state="disabled")
-            
+    
+    #Importacion#
+    def get_Id_Seleccionado(self):
+        return self.frmTablaSelecciones.get_id_seleccionado()
+    def exportarImagen(self):
+        filename = filedialog.askdirectory()
+        if filename:
+            iid=self.get_Id_Seleccionado()-1
+            puntos = self.Areas[iid][3].get_xy()
+            xmin, ymin= round(puntos[0][0]),round(puntos[0][1])
+            xmax, ymax= round(puntos[2][0]),round(puntos[2][1])
 
+            if self.frmGestorArchivos.tipoImgBruta == "SEN3":
+                latmin,lonmin = self.frmImagen1.consultarCoord(xmin,ymin)
+                latmax,lonmax = self.frmImagen1.consultarCoord(xmax,ymax)
+                coord =[latmin,lonmin,latmax,lonmax]
+            elif self.frmGestorArchivos.tipoImgBruta == "SEN2":
+                coord =[xmin,ymin,xmax-xmin,xmax-xmin]
+            print(coord)
+            self.frmGestorArchivos.exportarImagen(filename,coord,(iid+1))
+
+    def exportarTodasLasAreas(self):
+        filename = filedialog.askdirectory()
+        if filename:
+            for i in range(0,len(self.Areas)):
+                puntos = self.Areas[i][3].get_xy()
+                xmin, ymin= round(puntos[0][0]),round(puntos[0][1])
+                xmax, ymax= round(puntos[2][0]),round(puntos[2][1])
+
+                if self.frmGestorArchivos.tipoImgBruta == "SEN3":
+                    latmin,lonmin = self.frmImagen1.consultarCoord(xmin,ymin)
+                    latmax,lonmax = self.frmImagen1.consultarCoord(xmax,ymax)
+                    coord =[latmin,lonmin,latmax,lonmax]
+                elif self.frmGestorArchivos.tipoImgBruta == "SEN2":
+                    coord =[xmin,ymin,xmax-xmin,xmax-xmin]
+                self.frmGestorArchivos.exportarImagen(filename,coord,(i+1))

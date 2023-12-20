@@ -86,7 +86,7 @@ class FrmTablaSelecciones(tk.Frame):
             if i == ids:
                 self.treeview.set(item, column="choose", value=choose)
     
-    # Elimanando #
+    # Eliminando #
     def get_id_seleccionado(self):
         seleccion = self.treeview.selection()
         if seleccion:

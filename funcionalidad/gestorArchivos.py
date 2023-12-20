@@ -7,8 +7,9 @@ import re
 
 from osgeo import gdal
 from tkinter import filedialog
-from funcionalidad.procesamientoSEN3 import procesarImagenBrutaSEN3
-from funcionalidad.procesamientoSEN2 import procesarImagenBrutaSEN2
+from funcionalidad.procesamientoSEN3 import procesarImagenBrutaSEN3, exportacionSEN3
+from funcionalidad.procesamientoSEN2 import procesarImagenBrutaSEN2, exportacionSEN2
+
 
 class GestorArchivos:
     def __init__(self,controller=None):
@@ -189,7 +190,19 @@ class GestorArchivos:
         buttonGuardar = tk.Button(app,text="Guardar",command=lambda: self.guardarColores(colores,app))
         buttonGuardar.grid(row=7,column=2,pady=10,padx=5,sticky="ew")
 
-
+#Getters#
+    def getNombreImg(self,nombre):
+        if nombre == "FrameImagen1":
+            return self.nombreImgFrame1
+        else:
+            return self.nombreImgFrame2
+    def getRutaImgBruta_img (self):
+        return self.rutaImgBruta_img
+    def getTipoImgBruta(self):
+        return self.tipoImgBruta
+    def getAbrirArchivo(self):
+        return self.abrirArchivo
+#   Configurar Colores #
     def validacionEntry(self,contenido):
         patron_hex = re.compile(r'^[0-9A-Fa-f]*$')
         caracterValido = bool(re.match(patron_hex, contenido))
@@ -236,16 +249,11 @@ class GestorArchivos:
         self.controller.recolorearAreas()
         ventana.destroy()
 
-        
-#Getters#
-    def getNombreImg(self,nombre):
-        if nombre == "FrameImagen1":
-            return self.nombreImgFrame1
-        else:
-            return self.nombreImgFrame2
-    def getRutaImgBruta_img (self):
-        return self.rutaImgBruta_img
-    def getTipoImgBruta(self):
-        return self.tipoImgBruta
-    def getAbrirArchivo(self):
-        return self.abrirArchivo
+
+# Exportar imagen#        
+    def exportarImagen(self,filename,coord,iid): 
+        if self.tipoImgBruta == "SEN3":
+            exportacionSEN3(self.rutaImgBruta_bands,self.rutaImgBruta_temp,filename,iid,coord)
+        elif self.tipoImgBruta == "SEN2":
+            exportacionSEN2(self.rutaImgBruta_bands,self.rutaImgBruta_temp,filename,iid,coord)
+        print("Exportacion terminada!")

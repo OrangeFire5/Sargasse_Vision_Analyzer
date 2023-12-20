@@ -12,11 +12,11 @@ class FrmBotones(tk.Frame):
 
     def createButton(self):
         self.btnExportarSelecciones =  tk.Button(self)
-        self.btnExportarSelecciones.config(text="Exportar\nSelecciones...",state="disabled")
+        self.btnExportarSelecciones.config(text="Exportar\nSelecciones",command=self.controller.exportarTodasLasAreas,state="disabled")
         self.btnExportarSelecciones.place(relx=0.05,rely=0.0625, relwidth=0.90, relheight=0.25)
 
         self.btnExportarSeleccion=  tk.Button(self)
-        self.btnExportarSeleccion.config(text="Exportar\nSeleccion",state="disabled")
+        self.btnExportarSeleccion.config(text="Exportar\nSeleccion",state="disabled", command=self.controller.exportarImagen)
         self.btnExportarSeleccion.place(relx=0.05,rely=0.375,  relwidth=0.90, relheight=0.25)
 
 
