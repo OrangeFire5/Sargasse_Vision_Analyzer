@@ -6,7 +6,7 @@ class Controller:
         self.frmTablaSelecciones = None
         self.frmBotones = None
         self.frmGestorArchivos =None
-        self.frmArea = []
+        self.Areas =[]
 
     def set_frmImagen1(self, frmImagen):
         self.frmImagen1 = frmImagen
@@ -55,49 +55,111 @@ class Controller:
             self.frmImagen1.ajustarVista()
             self.frmImagen1.sincronizar = True
     ## Fin - Sincronizar ##
-    #Funciones de manejo de Tabla de selecciones
-    def agregarAreaATablaSelecciones(self,ids,puntos,coord,choose="F+"):
-        self.frmTablaSelecciones.insertarDatos(ids,puntos,coord,choose)
-    def modificarPuntosTabla(self,ids,puntos):
-        self.frmTablaSelecciones.modificarPuntos(ids,puntos)
-    def modificarCoordTabla(self,ids,coord):
-        self.frmTablaSelecciones.modificarCoord(ids,coord)
-    def modificarChooseTabla(self,ids,choose):
-        self.frmTablaSelecciones.modificarChoose(ids,choose)
-    def set_frmArea(self,nombre):
-        self.frmArea.append(nombre)
-    def desactivarSelecciones(self): 
-        self.frmTablaSelecciones.deseleccionar_todo()
-        self.desactivarBtnEliminarSelecciones()
-        self.desactivarBtnExportarSeleccion()
-    def activarModoEdicion(self,ids,color):
+            
+    ## AREAS ##
+    #Construccion de Areas#
+    def set_Area(self,idLocal,frmImagen,area,tipo):
+        a=[]
+        a.append(len(self.Areas))
+        a.append(idLocal)
+        a.append(frmImagen)
+        a.append(area)
+        a.append(tipo)
+        self.Areas.append(a)
+    def agregarAreaATablaSelecciones(self,puntos,coord,choose="F+"):
+        self.frmTablaSelecciones.insertarDatos(len(self.Areas),puntos,coord,choose)
         self.activarBtnEliminarSelecciones()
         self.activarBtnExportarSeleccion()
-        if self.frmArea[ids] == "FrameImagen1": 
-            self.frmImagen1.activarEdicionArea(ids,color)
-        elif self.frmArea[ids] == "FrameImagen2":
-            self.frmImagen2.activarEdicionArea(ids,color)
+
+    #Modo edicion#
+    def desactivarSelecciones(self,newArea=False):
+        if not newArea:
+            self.frmTablaSelecciones.deseleccionar()
+        self.desactivarBtnEliminarSelecciones()
+        self.desactivarBtnExportarSeleccion()   
+    def activarModoEdicion(self,ids,color):
+        self.Areas[ids][2].activarModoEdicion(self.Areas[ids][1],color)
+        self.activarBtnEliminarSelecciones()
+        self.activarBtnExportarSeleccion()
+    # Editando #
+    def modificarPuntosTabla(self,nombre,ids,puntos):
+        for a in self.Areas:
+            print(f"{nombre} == {a[2].nombre} and {ids} == {a[1]}:")
+            if nombre == a[2].nombre and ids == a[1]:
+                self.frmTablaSelecciones.modificarPuntos(a[0]+1,puntos)
+                return  
+    def modificarCoordTabla(self,nombre,ids,coord):
+        for a in self.Areas:
+            if nombre == a[2].nombre and ids == a[1]:
+                self.frmTablaSelecciones.modificarCoord(a[0]+1,coord)
+                return
+    def modificarChooseTabla(self,nombre,ids,choose):
+        for a in self.Areas:
+            if nombre == a[2].nombre and ids == a[1]:
+                a[4] = choose
+                self.frmTablaSelecciones.modificarChoose(a[0]+1,choose)
+                return
+    # Eliminando #         
     def eliminarSeleccion(self):
         ids=self.frmTablaSelecciones.get_id_seleccionado()
         self.frmTablaSelecciones.eliminarArea(ids)
         ids=ids-1
-        if self.frmArea[ids] == "FrameImagen1": 
-            self.frmImagen1.eliminarArea(ids)
-        elif self.frmArea[ids] == "FrameImagen2":
-            self.frmImagen2.eliminarArea(ids)
-        del self.frmArea[ids]
-    def seleccionar(self,ids):
-        self.frmTablaSelecciones.treeview.selection_set(ids)
-        self.activarBtnEliminarSelecciones()
-        self.activarBtnExportarSeleccion()
-    def activarBtnEliminarSelecciones(self):
-        self.frmBotones.btnElimnarSelecciones.config(state="active")
-    def desactivarBtnEliminarSelecciones(self):
-        self.frmBotones.btnElimnarSelecciones.config(state="disabled")
+        self.Areas[ids][2].eliminarArea(self.Areas[ids][1])
+        del self.Areas[ids]
+        frm1=0
+        frm2=0
+        for i in range(0,len(self.Areas)):
+            self.Areas[i][0] = i
+            if self.Areas[i][2].nombre == "FrameImagen1":
+                self.Areas[i][1]=frm1
+                frm1=frm1+1
+            else: 
+                self.Areas[i][1]=frm2
+                frm2=frm2+1
+    
+    #Colorear Areas#
+    def recolorearAreas(self):
+        if self.frmImagen1.EditMode:
+            self.frmImagen1.desactivarModoEdicion()
+        if self.frmImagen2.EditMode:
+            self.frmImagen2.desactivarModoEdicion()
+        for area in self.Areas:
+            color = self.colorearArea(area[3],area[4])
+        self.frmImagen1.canvas.draw()
+        self.frmImagen2.canvas.draw()
+    def colorearArea(self,area,choose):  
+        if choose == "F-" or choose ==0:
+            color = self.get_colorFN()
+            choose = "F-"
+        elif choose == "T+" or choose ==1:
+            color = self.get_colorTP()
+            choose = "T+"
+        elif choose == "F+" or choose ==2:
+            color = self.get_colorFP()
+            choose = "F+"
+        else:
+            color = self.get_colorTP()
+            choose = "T+"
+        area.set_facecolor(color)
+        area.set_edgecolor(color)
+        return (color,choose)
+
+    # Obtencion de colores #
+    def get_colorFN(self):
+        return self.frmGestorArchivos.colorFN
+    def get_colorTP(self):
+        return self.frmGestorArchivos.colorTP
+    def get_colorFP(self):
+        return self.frmGestorArchivos.colorFP
+    
+    #frmBotones#
     def activarBtnExportarSeleccion(self):
         self.frmBotones.btnExportarSeleccion.config(state="active")
     def desactivarBtnExportarSeleccion(self):
         self.frmBotones.btnExportarSeleccion.config(state="disabled")
-
+    def activarBtnEliminarSelecciones(self):
+        self.frmBotones.btnElimnarSelecciones.config(state="active")
+    def desactivarBtnEliminarSelecciones(self):
+        self.frmBotones.btnElimnarSelecciones.config(state="disabled")
             
 

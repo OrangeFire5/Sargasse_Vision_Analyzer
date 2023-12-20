@@ -1,1 +1,9 @@
-Globalizar valores de factor_x y factor_y  en frmImagen.py
+-Utilizar la misma funcion de cambiar color para cambiar el tipo de seleccion
+-Solucionar este error:
+    Traceback (most recent call last):
+      File "C:\Users\DELL\AppData\Local\Programs\Python\Python312\Lib\site-packages\matplotlib\cbook.py", line 298, in process
+        func(*args, **kwargs)
+      File "c:\Users\DELL\Desktop\UPA\Estadia\Sargasse_Vision_Analyzer\clases\frmImagen.py", line 299, in CoordenadasImagen
+        self.datosPixel.set(f"Value:{self.value}, Lat:{coord[0]}, Lon:{coord[1]}, x:{self.x}, y:{self.y}")
+                                     ^^^^^^^^^^
+    AttributeError: 'FrmImagen' object has no attribute 'value'

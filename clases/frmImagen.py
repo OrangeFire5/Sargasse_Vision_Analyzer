@@ -21,8 +21,6 @@ class FrmImagen(tk.Frame):
         self.config(relief="ridge", bd=5)
         self.ancho = self.winfo_width()
         self.alto = self.winfo_height()
-        self.color = "limegreen"
-
 
         ##Configuraciones##
         self.grid_propagate(False)
@@ -34,6 +32,8 @@ class FrmImagen(tk.Frame):
         self.createIcono(image)
         self.createLabel(textoLabel)
         self.createButton()
+        #Areas
+        self.Areas=[]
 
 ##Creacion de elementos de la Ul##
     def createIcono(self,image):
@@ -109,12 +109,12 @@ class FrmImagen(tk.Frame):
         #Area - 5 
         self.area = None
         self.pointersArea = []
-        self.Areas=[]
         self.vertices = []
         self.trazandoArea = False
         self.EditMode=False
         self.modificandoArea =False
         self.areaModificada = 0
+        self.color = self.controller.get_colorTP()
         icono = Image.open(os.path.join(path,"area.png")).resize((15,15))
         self.iconArea = ImageTk.PhotoImage(icono)
         self.btnArea = tk.Button(self.BarraSelecciones)
@@ -204,32 +204,12 @@ class FrmImagen(tk.Frame):
     def ocultarBarraSelecciones(self):
         self.BarraSelecciones.grid_forget()
     def cambioDeTipo(self,*args):
-        if self.tipoDeSeleccion.get() == 0:
-            tipo="F-"
-            self.color ="gold"      
-            self.Areas[self.areaModificada].set_facecolor(self.color)
-            self.Areas[self.areaModificada].set_edgecolor(self.color)
-            for vertice in self.vertices:
-                vertice.set_facecolor(self.color)
-                vertice.set_edgecolor(self.color)
-        elif self.tipoDeSeleccion.get() == 1:
-            tipo="T+"
-            self.color ="limegreen" 
-            self.Areas[self.areaModificada].set_facecolor(self.color)
-            self.Areas[self.areaModificada].set_edgecolor(self.color)
-            for vertice in self.vertices:
-                vertice.set_facecolor(self.color)
-                vertice.set_edgecolor(self.color)
-        elif self.tipoDeSeleccion.get() == 2:
-            tipo="F+"
-            self.color ="brown"
-            self.Areas[self.areaModificada].set_facecolor(self.color)
-            self.Areas[self.areaModificada].set_edgecolor(self.color)
-            for vertice in self.vertices:
-                vertice.set_facecolor(self.color)
-                vertice.set_edgecolor(self.color)
+        self.color,choose = self.controller.colorearArea(self.Areas[self.areaModificada],self.tipoDeSeleccion.get())
+        for vertice in self.vertices:
+            vertice.set_facecolor(self.color)
+            vertice.set_edgecolor(self.color)
         self.canvas.draw()
-        self.controller.modificarChooseTabla(self.areaModificada+1,tipo)
+        self.controller.modificarChooseTabla(self.nombre,self.areaModificada,choose)
     #Abre una imagen
     def AbrirImagen(self):
         filename = self.gestorArchivos.abrirImagen(self.nombre)
@@ -449,16 +429,14 @@ class FrmImagen(tk.Frame):
         ymin,ymax = (y1,y2) if y1<y2 else (y2,y1)
         self.pointersArea.clear()
         self.pointersArea=[(xmin,ymin),(xmin,ymax),(xmax,ymax),(xmax,ymin)]
-        self.controller.set_frmArea(self.nombre)
         latmin,lonmin = self.consultarCoord(xmin,ymin)
         latmax,lonmax = self.consultarCoord(xmax,ymax)
         puntosDatos=f"({xmin},{ymin}),({xmin},{ymax}),({xmax},{ymax}),({xmax},{ymin})"
         coord =f"({latmin},{lonmin}),({latmin},{lonmax}),({latmax},{lonmax}),({latmax},{lonmin})"
         self.Areas.append(patches.Polygon(self.pointersArea, closed=True, edgecolor=self.color , facecolor=self.color , alpha=0.3,linewidth=2))
         self.ax.add_patch(self.Areas[-1])
-        
-        self.controller.agregarAreaATablaSelecciones(len(self.Areas),puntosDatos,coord,"T+")
-        self.controller.seleccionar(len(self.Areas))
+        self.controller.set_Area(len(self.Areas)-1,self,self.Areas[-1],"T+")
+        self.controller.agregarAreaATablaSelecciones(puntosDatos,coord,"T+")
         self.modoEdicion(self.pointersArea, (len(self.Areas)-1))
         self.cancelarContruccionArea()
 
@@ -502,13 +480,11 @@ class FrmImagen(tk.Frame):
         self.controller.desactivarSelecciones()
         self.desactivarModoEdicion()
 
-
     def modificarArea(self):
         x,y = round(self.x),(self.y)
         puntos = self.Areas[self.areaModificada].get_xy()
         xmin, ymin= round(puntos[0][0]),round(puntos[0][1])
         xmax, ymax= round(puntos[2][0]),round(puntos[2][1])
-
         if self.verticeModificado == 0:
             xmin=x
             ymin=y
@@ -545,9 +521,8 @@ class FrmImagen(tk.Frame):
             latmax,lonmax = self.consultarCoord(xmax,ymax)
             puntosDatos=f"({xmin},{ymin}),({xmin},{ymax}),({xmax},{ymax}),({xmax},{ymin})"
             coord =f"({latmin},{lonmin}),({latmin},{lonmax}),({latmax},{lonmax}),({latmax},{lonmin})"
-            self.controller.modificarPuntosTabla((self.areaModificada+1),puntosDatos)
-            self.controller.modificarCoordTabla((self.areaModificada+1),coord)
-
+            self.controller.modificarPuntosTabla(self.nombre,(self.areaModificada),puntosDatos)
+            self.controller.modificarCoordTabla(self.nombre,(self.areaModificada),coord)
             for i in range(0,4):
                 self.vertices[i].set_center(nuevos_puntos[i])
             self.canvas_widget.unbind("<ButtonPress-1>")
@@ -559,7 +534,7 @@ class FrmImagen(tk.Frame):
 
     def desactivarModoEdicion(self):
         self.EditMode =False
-        self.color ="limegreen" 
+        self.color = self.controller.get_colorTP()
         for vertice in self.vertices:
             vertice.remove()
         self.canvas.draw()
@@ -569,8 +544,9 @@ class FrmImagen(tk.Frame):
         self.activarHerramienta("Area")
         self.cuadroClasificador.place_forget()
         self.EtiquetaDeNombre.place(relx=0, rely=0,relwidth=0.3,relheight=1)
+        self.controller.desactivarSelecciones(True)
 
-    def activarEdicionArea(self,area,color):
+    def activarModoEdicion(self,area,color):
         if (self.EditMode and not area == self.areaModificada) or (not self.EditMode):
             if not area == self.areaModificada:
                 self.desactivarModoEdicion()

@@ -19,7 +19,7 @@ class FrmBotones(tk.Frame):
         self.btnExportarSeleccion.config(text="Exportar\nSeleccion",state="disabled")
         self.btnExportarSeleccion.place(relx=0.05,rely=0.375,  relwidth=0.90, relheight=0.25)
 
-        self.btnElimnarSelecciones =  tk.Button(self)  
-        #self.btnElimnarSelecciones =  tk.Button(self,bg="#B02525",fg="white", font=("Arial", 10, "bold"),state="disabled")
+
+        self.btnElimnarSelecciones =  tk.Button(self,state="disabled")
         self.btnElimnarSelecciones.config(text="Eliminar\nseleccion",command=self.controller.eliminarSeleccion,state="disabled")
         self.btnElimnarSelecciones.place(relx=0.05,rely=0.6875,  relwidth=0.90, relheight=0.25)

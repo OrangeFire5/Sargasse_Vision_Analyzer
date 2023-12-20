@@ -10,15 +10,18 @@ class FrmTablaSelecciones(tk.Frame):
         self.controller = controller
         self.createTitle()
         self.createTabla()
-        self.treeview.bind("<<TreeviewSelect>>", self.activarArea)
+        self.treeview.tag_bind("seleccion", "<<TreeviewSelect>>", self.activarModoEdicion)
+        #self.treeview.bind("<<TreeviewSelect>>", self.activarArea)
 
     def createTitle(self):
         tk.Label(self, text="Tabla de selecciones").pack(fill=tk.X)
     def createTabla(self):
+        
         self.hscrollbar = ttk.Scrollbar(self, orient=tk.HORIZONTAL)
         self.vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
         self.treeview = ttk.Treeview(self
-            ,columns=("ID","puntos", "coord","choose") 
+            ,columns=("ID","puntos", "coord","choose")
+            ,selectmode="browse"
             ,xscrollcommand=self.hscrollbar.set
             ,yscrollcommand=self.vscrollbar.set
             ,height=3)
@@ -38,15 +41,35 @@ class FrmTablaSelecciones(tk.Frame):
         self.treeview.column("choose",width=80,stretch=tk.NO,anchor="center")
         self.treeview.pack(fill=tk.BOTH, expand=True)
         self.treeview.tag_configure("datos", font=("", 7))
+        self.treeview.tag_configure("seleccion")
         #self.treeview.grid(column=0, row=1, columnspan=6, sticky="nsew",padx=10, pady=10)
 
-    def get_id_seleccionado(self):
-        seleccion = self.treeview.selection()
-        if seleccion:
-            return int(self.treeview.item(seleccion, "values")[0])
-
+    #Construir Area#
     def insertarDatos(self,ids,puntos,coord,choose="F+"):
         self.treeview.insert('', 'end', values=(ids,puntos,coord,choose), tags=("datos"),iid=ids)
+        self.treeview.selection_set(ids)
+        self.treeview.item(ids, tags=("datos","seleccion"))
+    
+    #Modo Edicion
+    def activarModoEdicion(self,event):
+        seleccion = self.treeview.selection()
+        if seleccion:
+            ids = int(self.treeview.item(seleccion, "values")[0])
+            ids =ids-1
+            choose=self.treeview.item(seleccion, "values")[3]
+            if choose == "F-":
+                color=self.controller.get_colorFN()
+            if choose == "T+":
+                color=self.controller.get_colorTP()
+            if choose == "F+":
+                color=self.controller.get_colorFP()
+            self.controller.activarModoEdicion(ids,color)
+    def deseleccionar(self):
+        items_seleccionados = self.treeview.selection()
+        if items_seleccionados:
+            self.treeview.selection_remove(items_seleccionados)
+
+    # Editando #
     def modificarPuntos(self,i,puntos):
         for item in self.treeview.get_children():
             ids = int(self.treeview.item(item, "values")[0]) 
@@ -62,35 +85,20 @@ class FrmTablaSelecciones(tk.Frame):
             ids = int(self.treeview.item(item, "values")[0]) 
             if i == ids:
                 self.treeview.set(item, column="choose", value=choose)
-    def activarArea(self,event):
+    
+    # Elimanando #
+    def get_id_seleccionado(self):
         seleccion = self.treeview.selection()
         if seleccion:
-            ids = int(self.treeview.item(seleccion, "values")[0])
-            ids =ids-1
-            choose=self.treeview.item(seleccion, "values")[3]
-            if choose == "F-":
-                color="gold"
-            if choose == "T+":
-                color="limegreen"
-            if choose == "F+":
-                color="brown"
-            self.controller.activarModoEdicion(ids,color)
-    def deseleccionar_todo(self):
-        items_seleccionados = self.treeview.selection()
-        if items_seleccionados:
-            self.treeview.selection_remove(items_seleccionados)
+            return int(self.treeview.item(seleccion, "values")[0])       
     def eliminarArea(self,ids):
         seleccion = self.treeview.selection()
         if seleccion:
             self.treeview.delete(seleccion)
-
         for item in self.treeview.get_children():
             i = int(self.treeview.item(item, "values")[0]) 
             if i > ids:
                 valores = list(self.treeview.item(item, "values"))
                 valores[0] = i-1
                 self.treeview.delete(i)
-                self.treeview.insert("", "end", values=valores,tags=("datos"), iid=i-1)
-
-
-    
+                self.treeview.insert("", "end", values=valores,tags=("datos","seleccion"), iid=i-1)

@@ -3,6 +3,7 @@ import zipfile
 import shutil
 import json
 import tkinter as tk
+import re
 
 from osgeo import gdal
 from tkinter import filedialog
@@ -25,6 +26,7 @@ class GestorArchivos:
         self.nombreImgFrame1 = ""
         self.nombreImgFrame2 = ""
         self.tipoImgBruta = ""
+        #colores
 
         self.Inicializar()
 
@@ -32,7 +34,8 @@ class GestorArchivos:
         #Revisa si existe la carpeta del proyecto
         if not os.path.exists(self.rutaProyecto):
             os.makedirs(self.rutaProyecto)
-        
+        self.cargarColoresAreas()
+                
     def crearDirTrabajo(self):
         if not self.abrirArchivo:
             i=1
@@ -126,23 +129,115 @@ class GestorArchivos:
                'nombreImgFrame1':self.nombreImgFrame1,
                'tipoImgBruta':self.tipoImgBruta,
                'nombreImgFrame2':self.nombreImgFrame2}
-        print(f'Guadado en:{os.path.join(self.rutaProyecto,'datos.json')}')
         with open(os.path.join(self.rutaProyecto,'datos.json'), 'w') as archivo_json:
             json.dump(datos, archivo_json)
 
+#Menu colores#
+    def cargarColoresAreas(self):
+        try:
+            with open('config.json', 'r') as archivo_json:
+                datos = json.load(archivo_json)
+            self.colorFN = datos['colorFN']
+            self.colorTP = datos['colorTP']
+            self.colorFP = datos['colorFP']
+        except:
+            self.colorFN = "gold"
+            self.colorTP = "limegreen"
+            self.colorFP = "brown"
     def menuColorAreas(self):
-        app = tk.Tk()
+        app = tk.Tk()  
         app.title("Colores de Area")
-        app.geometry("250x250")
+        app.geometry("270x200")
+        app.resizable(width=False, height=False)
         app.iconbitmap("img/iconos/icon.ico")
-        tk.Label(text="Color de falso negativo(ColorFN/F-)")
-        tk.Label(text="Color de verdadero positivo(ColorTP/T+)")
-        tk.Label(text="Color de falso positivo(ColorFP/F+)")
-        app.mainloop()
+        for i in range(0,8):
+            app.rowconfigure(i,weight=1)
+        app.columnconfigure(0,weight=5)
+        app.columnconfigure(1,weight=1)
+        app.columnconfigure(2,weight=4)
+        #Titulo
+        tk.Label(app,text="Agrega el valor del color en hexadecimal",font=("",8,"bold")).grid(row=0,column=0,columnspan=3,pady=10)
+        #colorFN
+        tk.Label(app,text="Color de falso negativo(ColorFN/F-)").grid(row=1,column=0,columnspan=3,sticky="w",padx=5,pady=2)
+        lbColorFN = tk.Label(app,bg=self.colorFN)
+        lbColorFN.grid(row=2,column=0,sticky="ew",padx=12)
+        tk.Label(app,text="#",font=("",9,"bold")).grid(row=2,column=1,sticky="e")
+        colorFN = tk.Entry(app,width=6,validate="key",validatecommand=(app.register(self.validacionEntry), "%P"))     
+        colorFN.grid(row=2,column=2,padx=10,sticky="ew")
+        colorFN.insert(0,self.colorFN.replace("#",""))
+        colorFN.bind("<FocusOut>", lambda event, entry=colorFN, lb=lbColorFN: self.presentarColor(event, entry, lb))
+        #colorTP
+        tk.Label(app,text="Color de verdadero positivo(ColorTP/T+)").grid(row=3,column=0,columnspan=3,sticky="w",padx=5,pady=2)  
+        lbColorTP = tk.Label(app,bg=self.colorTP)
+        lbColorTP.grid(row=4,column=0,sticky="ew",padx=12)
+        tk.Label(app,text="#",font=("",9,"bold")).grid(row=4,column=1,sticky="e")
+        colorTP = tk.Entry(app,width=6,validate="key",validatecommand=(app.register(self.validacionEntry), "%P"))  
+        colorTP.grid(row=4,column=2,padx=10,sticky="ew")
+        colorTP.insert(0,self.colorTP.replace("#",""))
+        colorTP.bind("<FocusOut>", lambda event, entry=colorTP, lb=lbColorTP: self.presentarColor(event, entry, lb))
+        #colorFP
+        tk.Label(app,text="Color de falso positivo(ColorFP/F+)").grid(row=5,column=0,columnspan=3,sticky="w",padx=5,pady=2)
+        lbColorFP = tk.Label(app,bg=self.colorFP)
+        lbColorFP.grid(row=6,column=0,sticky="ew",padx=12)
+        tk.Label(app,text="#",font=("",9,"bold")).grid(row=6,column=1,sticky="e")
+        colorFP = tk.Entry(app,width=6,validate="key",validatecommand=(app.register(self.validacionEntry), "%P"))  
+        colorFP.grid(row=6,column=2,padx=10,sticky="ew")
+        colorFP.insert(0,self.colorFP.replace("#",""))
+        colorFP.bind("<FocusOut>", lambda event, entry=colorFP, lb=lbColorFP: self.presentarColor(event, entry, lb))
 
-    def exportarArea(self):
-        exit
-            
+        colores=[colorFN,colorTP,colorFP]
+        buttonGuardar = tk.Button(app,text="Guardar",command=lambda: self.guardarColores(colores,app))
+        buttonGuardar.grid(row=7,column=2,pady=10,padx=5,sticky="ew")
+
+
+    def validacionEntry(self,contenido):
+        patron_hex = re.compile(r'^[0-9A-Fa-f]*$')
+        caracterValido = bool(re.match(patron_hex, contenido))
+        return len(contenido)<=6 and caracterValido
+    def presentarColor(self,event,entry,lb):
+        valor = entry.get()
+        if len(valor)<3:
+            for i in range(len(valor),3):
+                valor=f"{valor}0"
+                entry.insert(tk.END,"0")
+        elif len(valor)<6 and not len(valor) == 3:
+            for i in range(len(valor),6):
+                valor=f"{valor}0"
+                entry.insert(tk.END,"0")
+        color =f"#{valor}"
+        lb.config(bg=color)
+
+    def guardarColores(self,colors,ventana):
+        color = []
+        for i in range(0,3):
+            color.append(colors[i].get())
+            if color[i]== "":
+                match i:
+                    case 0:
+                        color[i] = "gold"
+                    case 1:
+                        color[i] = "limegreen"
+                    case 2:
+                        color[i] = "brown"
+            else:
+                if len(color[i])<3:
+                    for j in range(len(color[i]),3):
+                        color[i]=f"{color[i]}0"
+                elif len(color[i])<6 and not len(color[i]) == 3:
+                    for j in range(len(color[i]),6):
+                        color[i]=f"{color[i]}0"
+                color[i] =f"#{color[i]}"
+        datos={'colorFN': color[0],'colorTP':color[1],'colorFP':color[2]}
+        with open('config.json', 'w') as archivo_json:
+            json.dump(datos, archivo_json)
+        self.colorFN = color[0]
+        self.colorTP = color[1]
+        self.colorFP = color[2]
+        self.controller.recolorearAreas()
+        ventana.destroy()
+
+        
+#Getters#
     def getNombreImg(self,nombre):
         if nombre == "FrameImagen1":
             return self.nombreImgFrame1
