@@ -114,6 +114,7 @@ class FrmImagen(tk.Frame):
         self.EditMode=False
         self.modificandoArea =False
         self.areaModificada = 0
+        #Define las variables de tipo de seleccion actual
         self.color = self.controller.get_colorTP()
         icono = Image.open(os.path.join(path,"area.png")).resize((15,15))
         self.iconArea = ImageTk.PhotoImage(icono)
@@ -174,14 +175,14 @@ class FrmImagen(tk.Frame):
         else:
             self.EtiquetaDeDatos.place(relx=0.3, rely=0,relwidth=0.7,relheight=1)
 
-    def createCuadroClasificador(self):  
+    def createCuadroClasificador(self,area):  
         self.EtiquetaDeNombre.place_forget()
         self.cuadroClasificador = tk.Frame(self.BarraDeDatos)
         self.cuadroClasificador.config(bg="lightgrey",relief=None)
         self.cuadroClasificador.place(relx=0, rely=0,relwidth=0.3,relheight=1)
 
         self.tipoDeSeleccion = tk.IntVar()
-        self.tipoDeSeleccion.set(1)
+        self.tipoDeSeleccion.set(self.controller.get_tipo(self.nombre,area))
         self.tipoDeSeleccion.trace_add("write", self.cambioDeTipo)
         
         self.radio1 = tk.Radiobutton(self.cuadroClasificador,variable=self.tipoDeSeleccion, value=0,bg="lightgrey")
@@ -440,6 +441,21 @@ class FrmImagen(tk.Frame):
         self.modoEdicion(self.pointersArea, (len(self.Areas)-1))
         self.cancelarContruccionArea()
 
+    def cargarAreas(self,puntos,tipo):
+        xmin,ymin = puntos[0]
+        xmax,ymax = puntos[1]
+        pointersArea=[(xmin,ymin),(xmin,ymax),(xmax,ymax),(xmax,ymin)]
+        latmin,lonmin = self.consultarCoord(xmin,ymin)
+        latmax,lonmax = self.consultarCoord(xmax,ymax)
+        puntosDatos=f"({xmin},{ymin}),({xmin},{ymax}),({xmax},{ymax}),({xmax},{ymin})"
+        coord =f"({latmin},{lonmin}),({latmin},{lonmax}),({latmax},{lonmax}),({latmax},{lonmin})"
+        self.Areas.append(patches.Polygon(pointersArea, closed=True, edgecolor=self.color , facecolor=self.color , alpha=0.3,linewidth=2))
+        self.ax.add_patch(self.Areas[-1])
+        self.controller.colorearArea(self.Areas[-1],tipo)
+        self.controller.set_Area(len(self.Areas)-1,self,self.Areas[-1],tipo)
+        self.controller.agregarAreaATablaSelecciones(puntosDatos,coord,tipo)
+        self.canvas.draw()
+
     def cancelarContruccionArea(self,event=None):
         if self.herramientaSeleccionada == "ZoomMas":
                 self.canvas_widget.unbind("<ButtonPress-1>")
@@ -455,7 +471,7 @@ class FrmImagen(tk.Frame):
 
     def modoEdicion(self,puntos,area):
         self.EditMode =True
-        self.createCuadroClasificador()
+        self.createCuadroClasificador(area)
         factor_x = (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])*0.015
         factor_y = (self.ax.get_ylim()[0] - self.ax.get_ylim()[1])*0.015
         factor = factor_x if factor_x < factor_y else factor_y
@@ -549,7 +565,10 @@ class FrmImagen(tk.Frame):
     def activarModoEdicion(self,area,color):
         if (self.EditMode and not area == self.areaModificada) or (not self.EditMode):
             if not area == self.areaModificada:
-                self.desactivarModoEdicion()
+                try:
+                    self.desactivarModoEdicion()
+                except:
+                    exit
             self.color = color
             xy = self.Areas[area].get_xy()
             xmin, ymin= round(xy[0][0]),round(xy[0][1])

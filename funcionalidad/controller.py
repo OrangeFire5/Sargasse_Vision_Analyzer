@@ -83,10 +83,19 @@ class Controller:
         self.Areas[ids][2].activarModoEdicion(self.Areas[ids][1],color)
         self.activarBtnEliminarSelecciones()
         self.activarBtnExportarSeleccion()
+    def get_tipo(self,nombre,ids):
+        for a in self.Areas:
+            if nombre == a[2].nombre and ids == a[1]:
+                if a[4] == "F-":
+                    return 0
+                elif a[4] == "T+":
+                    return 1
+                elif a[4] == "F+":
+                    return 2
+        return 
     # Editando #
     def modificarPuntosTabla(self,nombre,ids,puntos):
         for a in self.Areas:
-            print(f"{nombre} == {a[2].nombre} and {ids} == {a[1]}:")
             if nombre == a[2].nombre and ids == a[1]:
                 self.frmTablaSelecciones.modificarPuntos(a[0]+1,puntos)
                 return  
@@ -169,7 +178,7 @@ class Controller:
     def desactivarBtnEliminarSelecciones(self):
         self.frmBotones.btnElimnarSelecciones.config(state="disabled")
     
-    #Importacion#
+    #Exportacion#
     def get_Id_Seleccionado(self):
         return self.frmTablaSelecciones.get_id_seleccionado()
     def exportarImagen(self):
@@ -204,3 +213,12 @@ class Controller:
                 elif self.frmGestorArchivos.tipoImgBruta == "SEN2":
                     coord =[xmin,ymin,xmax-xmin,xmax-xmin]
                 self.frmGestorArchivos.exportarImagen(filename,coord,(i+1))
+
+    #Guardar y abrir#
+    def cargarAreas(self,frmimagen, puntos, tipo):
+        if frmimagen == "FrameImagen1":
+            self.frmImagen1.cargarAreas(puntos,tipo)
+        elif frmimagen == "FrameImagen2":
+            self.frmImagen2.cargarAreas(puntos,tipo)
+        
+        
