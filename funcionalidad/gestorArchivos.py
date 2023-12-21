@@ -5,6 +5,8 @@ import json
 import tkinter as tk
 import re
 import shutil
+import sys
+import subprocess
 
 from osgeo import gdal
 from tkinter import filedialog
@@ -107,7 +109,8 @@ class GestorArchivos:
                     shutil.copy(filename, self.rutaImgProcesada_img)
                     return filename
     def nuevoProyecto(self):
-        exit
+        subprocess.run(["python", sys.argv[0]])
+
 
     def abrirProyecto(self):
         filename = filedialog.askdirectory()

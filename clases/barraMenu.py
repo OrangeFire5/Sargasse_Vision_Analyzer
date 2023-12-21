@@ -13,7 +13,7 @@ class BarraDeMenu(tk.Menu):
 
         #Seccion Archivo
         self.menu_archivo = tk.Menu(self.barra_menus, tearoff=False)
-        self.menu_archivo.add_command(label="Nuevo proyecto",accelerator="Ctrl+N",command=self.gestorArchivos.nuevoProyecto,compound=tk.LEFT)
+        self.menu_archivo.add_command(label="Nuevo proyecto",accelerator="Ctrl+N",command=self.nuevoProyecto,compound=tk.LEFT)
         self.menu_archivo.add_separator()
         self.menu_archivo.add_command(label="Abrir proyecto",accelerator="Ctrl+A",command=self.gestorArchivos.abrirProyecto,compound=tk.LEFT)
         self.menu_archivo.add_separator()
@@ -44,6 +44,9 @@ class BarraDeMenu(tk.Menu):
         self.master.config(menu=self.barra_menus)
     def prueba(self):
         print("opcion seleccionada")
+    def nuevoProyecto(self):
+        self.master.destroy()
+        self.gestorArchivos.nuevoProyecto()
     def salir(self):
         self.gestorArchivos.borrarDatosCarpetaTemporal()
         self.master.destroy()
