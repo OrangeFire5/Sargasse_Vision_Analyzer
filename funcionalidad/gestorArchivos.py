@@ -4,6 +4,7 @@ import shutil
 import json
 import tkinter as tk
 import re
+import shutil
 
 from osgeo import gdal
 from tkinter import filedialog
@@ -105,7 +106,9 @@ class GestorArchivos:
                     self.nombreImgFrame2 =f'{nombre}{ext}'
                     shutil.copy(filename, self.rutaImgProcesada_img)
                     return filename
-            
+    def nuevoProyecto(self):
+        exit
+
     def abrirProyecto(self):
         filename = filedialog.askdirectory()
         if filename:
@@ -141,6 +144,14 @@ class GestorArchivos:
                'areas':areas}
         with open(os.path.join(self.rutaProyecto,'datos.json'), 'w') as archivo_json:
             json.dump(datos, archivo_json)
+
+    def guardarComo(self):
+        exit
+    def borrarDatosCarpetaTemporal(self):
+        dir = os.path.join(os.path.expanduser("~"),".savia")
+        if os.path.exists(dir):
+            for f in os.listdir(dir):
+                shutil.rmtree(os.path.join(dir, f))
 
 #Menu colores#
     def cargarColoresAreas(self):

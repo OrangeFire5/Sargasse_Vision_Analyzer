@@ -8,3 +8,4 @@
                                      ^^^^^^^^^^
     AttributeError: 'FrmImagen' object has no attribute 'value'
 -Implementar set_xy() para optimizar procesamiento de areas
+-Modificar get_tipo y colorearArea para que funcionen en conjunto y reducir lineas de codigo

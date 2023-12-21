@@ -4,6 +4,7 @@ import tkinter as tk
 class BarraDeMenu(tk.Menu):
     def __init__(self, master = None,controller=None, gestorArchivos=None):
         super().__init__(master)
+        self.master.protocol("WM_DELETE_WINDOW", self.salir)
         self.master = master
         self.controller = controller
         self.gestorArchivos = gestorArchivos
@@ -12,14 +13,14 @@ class BarraDeMenu(tk.Menu):
 
         #Seccion Archivo
         self.menu_archivo = tk.Menu(self.barra_menus, tearoff=False)
-        self.menu_archivo.add_command(label="Nuevo proyecto",accelerator="Ctrl+N",command=self.prueba,compound=tk.LEFT)
+        self.menu_archivo.add_command(label="Nuevo proyecto",accelerator="Ctrl+N",command=self.gestorArchivos.nuevoProyecto,compound=tk.LEFT)
         self.menu_archivo.add_separator()
         self.menu_archivo.add_command(label="Abrir proyecto",accelerator="Ctrl+A",command=self.gestorArchivos.abrirProyecto,compound=tk.LEFT)
         self.menu_archivo.add_separator()
         self.menu_archivo.add_command(label="Guardar",accelerator="Ctrl+G",command=self.gestorArchivos.guardar,compound=tk.LEFT)
-        self.menu_archivo.add_command(label="Guardar como...",accelerator="Ctrl+G",command=self.prueba,compound=tk.LEFT)
+        self.menu_archivo.add_command(label="Guardar como...",accelerator="Ctrl+G",command=self.gestorArchivos.guardarComo,compound=tk.LEFT)
         self.menu_archivo.add_separator()
-        self.menu_archivo.add_command(label="Salir", command=master.destroy)
+        self.menu_archivo.add_command(label="Salir", command=self.salir)
         #Agrega atajo de teclado
         #self.app.bind_all("<Control-g>", prueba)
 
@@ -43,4 +44,7 @@ class BarraDeMenu(tk.Menu):
         self.master.config(menu=self.barra_menus)
     def prueba(self):
         print("opcion seleccionada")
+    def salir(self):
+        self.gestorArchivos.borrarDatosCarpetaTemporal()
+        self.master.destroy()
     
