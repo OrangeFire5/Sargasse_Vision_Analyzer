@@ -10,6 +10,7 @@ import subprocess
 
 from osgeo import gdal
 from tkinter import filedialog
+from PIL import ImageTk, Image
 from funcionalidad.procesamientoSEN3 import procesarImagenBrutaSEN3, exportacionSEN3
 from funcionalidad.procesamientoSEN2 import procesarImagenBrutaSEN2, exportacionSEN2
 
@@ -31,7 +32,6 @@ class GestorArchivos:
         self.nombreImgFrame2 = ""
         self.tipoImgBruta = ""
         #colores
-
         self.Inicializar()
 
     def Inicializar(self):
@@ -190,7 +190,7 @@ class GestorArchivos:
             self.colorTP = "limegreen"
             self.colorFP = "brown"
     def menuColorAreas(self):
-        app = tk.Tk()  
+        app = tk.Toplevel() 
         app.title("Colores de Area")
         app.geometry("270x200")
         app.resizable(width=False, height=False)
@@ -233,6 +233,50 @@ class GestorArchivos:
         colores=[colorFN,colorTP,colorFP]
         buttonGuardar = tk.Button(app,text="Guardar",command=lambda: self.guardarColores(colores,app))
         buttonGuardar.grid(row=7,column=2,pady=10,padx=5,sticky="ew")
+        app.mainloop()
+    def acercaDe(self):
+        app = tk.Toplevel()   
+        app.title("Acerca de...")
+        app.geometry("300x300")
+        #app.resizable(width=False, height=False)
+        app.iconbitmap("img/iconos/icon.ico")
+        for i in range(0,8):
+            app.rowconfigure(i,weight=1)
+        app.columnconfigure(0,weight=5)
+        app.columnconfigure(1,weight=1)
+        app.columnconfigure(2,weight=4)
+        #Titulo
+        path = os.path.dirname(__file__)
+        path = os.path.dirname(path)
+        path = os.path.join(path,"img")
+        path = os.path.join(path,"iconos")
+        path = os.path.join(path,"logo.png")
+        print(path)
+        image = Image.open(path).resize((100,100))
+        icon = ImageTk.PhotoImage(image)
+
+        tk.Label(app,image=icon).place(relx=0.025,rely=0,relwidth=0.3,relheight=0.3)
+        tk.Label(app,text="Sargasse Vision Analyzer",fg="#996600",font=("",13,"bold")).place(relx=0.3,rely=0,relwidth=0.7,relheight=0.175)
+        tk.Label(app,text="Versión: 1.1",fg="#3C5C26",font=("",10,"italic")).place(relx=0.3,rely=0.175,relwidth=0.7,relheight=0.05)
+
+        tk.Label(app,text="¡Gracias por utilizar nuestro producto!",fg="#EB9E03",font=("",11,"bold")).place(relx=0,rely=0.3,relwidth=1,relheight=0.15)
+
+        tk.Label(app,text="Creado por:",font=("",8,"bold"),fg="#D09500",anchor=tk.W).place(relx=0.05,rely=0.45,relwidth=10.9,relheight=0.05)
+        tk.Label(app,text="Ing. Linda Vázquez Erasmo",fg="#3C5C26",font=("",8,"bold"),anchor=tk.E).place(relx=0.1,rely=0.5,relwidth=0.8,relheight=0.05)
+        tk.Label(app,text="Ing. Irvin Ulises González Leal",fg="#3C5C26",font=("",8,"bold"),anchor=tk.E).place(relx=0.1,rely=0.55,relwidth=0.8,relheight=0.05)
+        tk.Label(app,text="En colaboración con:",fg="#D09500",font=("",8,"bold"),anchor=tk.W).place(relx=0.05,rely=0.6,relwidth=0.9,relheight=0.05)
+        tk.Label(app,text="Agencia Espacial Mexicana",fg="#3C5C26",font=("",8,"bold"),anchor=tk.E).place(relx=0.1,rely=0.65,relwidth=0.8,relheight=0.05)
+        tk.Label(app,text="Universidad Politecnica de Atlacomulco",fg="#3C5C26",font=("",8,"bold"),anchor=tk.E).place(relx=0.1,rely=0.7,relwidth=0.8,relheight=0.05)
+        tk.Label(app,text="Asesores:",fg="#D09500",font=("",8,"bold"),anchor=tk.W).place(relx=0.05,rely=0.75,relwidth=0.9,relheight=0.05)
+        tk.Label(app,text="Dr. Adán Salazar Garibay ",fg="#3C5C26",font=("",8,"bold"),anchor=tk.E).place(relx=0.1,rely=0.8,relwidth=0.8,relheight=0.05)
+        tk.Label(app,text="M. en C. Serafín Chávez Barranco",fg="#3C5C26",font=("",8,"bold"),anchor=tk.E).place(relx=0.1,rely=0.85,relwidth=0.8,relheight=0.05)
+        tk.Label(app,text="Ing. Marco Antonio López Paredes",fg="#3C5C26",font=("",8,"bold"),anchor=tk.E).place(relx=0.1,rely=0.9,relwidth=0.8,relheight=0.05)
+
+        #tk.Label(app,text="Savia es desarrollado como un proyecto de Estadia para obtener un grado en",font=("",8,"bold")).grid()
+        #tk.Label(app,text="ingenieria en sistemas computacionales.",font=("",8,"bold")).grid()
+        #tk.Label(app,text="El proyecto es resultado de la colaboracion entre la Universidad Politecnica de Atlacomulco y la Agencia Espacial Mexicana",font=("",8,"bold")).grid()
+        app.mainloop()
+         
 
 #Getters#
     def getNombreImg(self,nombre):

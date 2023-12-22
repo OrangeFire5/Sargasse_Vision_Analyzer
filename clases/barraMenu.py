@@ -35,7 +35,7 @@ class BarraDeMenu(tk.Menu):
         #Seccion ayuda
         self.menu_ayuda = tk.Menu(self.barra_menus, tearoff=False)
         self.menu_ayuda.add_command(label="Manual",accelerator="",command=self.prueba,compound=tk.LEFT)
-        self.menu_ayuda.add_command(label="Acerca de...",accelerator="",command=self.prueba,compound=tk.LEFT)
+        self.menu_ayuda.add_command(label="Acerca de...",accelerator="",command=self.gestorArchivos.acercaDe,compound=tk.LEFT)
         #Se agregan opciones al menu
         self.barra_menus.add_cascade(menu=self.menu_archivo, label="Archivo")
         self.barra_menus.add_cascade(menu=self.menu_opciones, label="Opciones")
