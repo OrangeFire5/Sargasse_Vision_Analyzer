@@ -7,7 +7,6 @@ import matplotlib.patches as patches
 from PIL import ImageTk, Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-
 from pyproj import Transformer
 
 class FrmImagen(tk.Frame):
@@ -39,29 +38,24 @@ class FrmImagen(tk.Frame):
     def createIcono(self,image):
         path = os.path.dirname(__file__)
         path = os.path.dirname(path)
-        path = os.path.join(path,"img/iconos")
-        path = os.path.join(path,image)
+        path = os.path.join(path,f"img/iconos/{image}")
 
-        self.imgenOriginal = Image.open(path).resize((100,100))
-        self.image = ImageTk.PhotoImage(self.imgenOriginal)
+        self.image = ImageTk.PhotoImage(Image.open(path).resize((100,100)))
         self.contenedorImage =  tk.Label(self, image=self.image)
         self.contenedorImage.grid(column=0,row=0,sticky="nsew")
 
     def createLabel(self, textoLabel):
-        self.lbImagen =  tk.Label(self)
-        self.lbImagen.config(text=textoLabel)
+        self.lbImagen =  tk.Label(self,text=textoLabel)
         self.lbImagen.grid(column=0,row=1,sticky="nsew", padx=20,pady=5, ipady=3)
 
     def createButton(self):
-        self.btnAbrirImagen =  tk.Button(self)
-        self.btnAbrirImagen.config(text="Seleccione una imagen", command=self.AbrirImagen)
+        self.btnAbrirImagen =  tk.Button(self,text="Seleccione una imagen", command=self.AbrirImagen)
         self.btnAbrirImagen.grid(column=0,row=2,sticky="nsew", padx=20,pady=5, ipady=3)
     
     def createBarraSelecciones(self):
         self.herramientaSeleccionada = ""
         self.sincronizar = False
-        self.BarraSelecciones = tk.Frame(self)
-        self.BarraSelecciones.config(background="gray",width=30, height=175,relief="ridge", bd=2)
+        self.BarraSelecciones = tk.Frame(self,background="gray",width=30, height=175,relief="ridge", bd=2)
         self.BarraSelecciones.grid(column=0,row=0,sticky="ne")
         
         #Rutas
@@ -72,38 +66,28 @@ class FrmImagen(tk.Frame):
         #Pointer - 0
         self.rectContorno = None
         self.rectRelleno =None
-        icono = Image.open(os.path.join(path,"puntero.png")).resize((15,15))
-        self.iconPointer = ImageTk.PhotoImage(icono)
-        self.btnPointer = tk.Button(self.BarraSelecciones)
-        self.btnPointer.config(image=self.iconPointer,command=self.pointerTool)
+        self.iconPointer = ImageTk.PhotoImage(Image.open(os.path.join(path,"puntero.png")).resize((15,15)))
+        self.btnPointer = tk.Button(self.BarraSelecciones,image=self.iconPointer,command=self.pointerTool)
         self.btnPointer.place(relx=0.06, rely=0.02, relwidth=0.9,relheight=0.12)
         
         #Hand - 1
-        icono = Image.open(os.path.join(path,"hand.png")).resize((15,15))
-        self.iconHand = ImageTk.PhotoImage(icono)
-        self.btnHand = tk.Button(self.BarraSelecciones)
-        self.btnHand.config(image=self.iconHand,command=self.handTool)
+        self.iconHand = ImageTk.PhotoImage(Image.open(os.path.join(path,"hand.png")).resize((15,15)))
+        self.btnHand = tk.Button(self.BarraSelecciones,image=self.iconHand,command=self.handTool)
         self.btnHand.place(relx=0.06, rely=0.16,relwidth=0.9,relheight=0.12)
 
         #AumentoZoom - 2
-        icono = Image.open(os.path.join(path,"zoomMas.png")).resize((15,15))
-        self.iconAumentoZoom = ImageTk.PhotoImage(icono)
-        self.btnAumentoZoom = tk.Button(self.BarraSelecciones)
-        self.btnAumentoZoom.config(image=self.iconAumentoZoom, command=self.aumentoZoomTool)
+        self.iconAumentoZoom = ImageTk.PhotoImage(Image.open(os.path.join(path,"zoomMas.png")).resize((15,15)))
+        self.btnAumentoZoom = tk.Button(self.BarraSelecciones,image=self.iconAumentoZoom, command=self.aumentoZoomTool)
         self.btnAumentoZoom.place(relx=0.06, rely=0.3, relwidth=0.9,relheight=0.12)
         
         #Disminuye Zoom - 3
-        icono = Image.open(os.path.join(path,"zoomMenos.png")).resize((15,15))
-        self.iconDisminuyeZoom = ImageTk.PhotoImage(icono)
-        self.btnDiminuyeZoom = tk.Button(self.BarraSelecciones)
-        self.btnDiminuyeZoom.config(image=self.iconDisminuyeZoom, command=self.disminuyeZoomTool)
+        self.iconDisminuyeZoom = ImageTk.PhotoImage(Image.open(os.path.join(path,"zoomMenos.png")).resize((15,15)))
+        self.btnDiminuyeZoom = tk.Button(self.BarraSelecciones,image=self.iconDisminuyeZoom, command=self.disminuyeZoomTool)
         self.btnDiminuyeZoom.place(relx=0.06, rely=0.44,relwidth=0.9,relheight=0.12)
 
         #Ajustar vista - 4
-        icono = Image.open(os.path.join(path,"ajuste.png")).resize((15,15))
-        self.iconAjusteVista = ImageTk.PhotoImage(icono)
-        self.btnAjusteVista = tk.Button(self.BarraSelecciones)
-        self.btnAjusteVista.config(image=self.iconAjusteVista, command=self.ajustarVista)
+        self.iconAjusteVista = ImageTk.PhotoImage(Image.open(os.path.join(path,"ajuste.png")).resize((15,15)))
+        self.btnAjusteVista = tk.Button(self.BarraSelecciones,image=self.iconAjusteVista, command=self.ajustarVista)
         self.btnAjusteVista.place(relx=0.06, rely=0.58,relwidth=0.9,relheight=0.12)
 
         #Area - 5 
@@ -116,35 +100,28 @@ class FrmImagen(tk.Frame):
         self.areaModificada = 0
         #Define las variables de tipo de seleccion actual
         self.color = self.controller.get_colorTP()
-        icono = Image.open(os.path.join(path,"area.png")).resize((15,15))
-        self.iconArea = ImageTk.PhotoImage(icono)
-        self.btnArea = tk.Button(self.BarraSelecciones)
-        self.btnArea.config(image =self.iconArea, command=self.areaTool)
+        self.iconArea = ImageTk.PhotoImage(Image.open(os.path.join(path,"area.png")).resize((15,15)))
+        self.btnArea = tk.Button(self.BarraSelecciones,image =self.iconArea, command=self.areaTool)
         self.btnArea.place(relx=0.06, rely=0.72,relwidth=0.9,relheight=0.12)
 
         #Sincronizar imagenes - 6
-        icono = Image.open(os.path.join(path,"sincro.png")).resize((15,15))
-        self.iconSicronizar = ImageTk.PhotoImage(icono)
-        self.btnSincronizar = tk.Button(self.BarraSelecciones)
-        self.btnSincronizar.config(image=self.iconSicronizar, command=self.sincronizarTool)
+        self.iconSicronizar = ImageTk.PhotoImage(Image.open(os.path.join(path,"sincro.png")).resize((15,15)))
+        self.btnSincronizar = tk.Button(self.BarraSelecciones,image=self.iconSicronizar, command=self.sincronizarTool)
         self.btnSincronizar.place(relx=0.06, rely=0.86,relwidth=0.9,relheight=0.12)
 
     def createBarraDeDatos(self, nombre):
-        self.BarraDeDatos = tk.Frame(self)
-        self.BarraDeDatos.config(background="gray",relief=None)
+        self.BarraDeDatos = tk.Frame(self,background="gray",relief=None)
         self.BarraDeDatos.place(relx=0, rely=0.935,relwidth=1,relheight=0.065)
         
         #Etiquetas de nombre
-        self.EtiquetaDeNombre = tk.Label(self.BarraDeDatos)
         self.datosPixel = tk.StringVar()
         self.datosPixel.set(nombre)
-        self.EtiquetaDeNombre.config(bg="lightgrey",cursor="arrow",font=("", 7), textvariable=self.datosPixel, anchor=tk.W)
+        self.EtiquetaDeNombre = tk.Label(self.BarraDeDatos,bg="lightgrey",cursor="arrow",font=("", 7), textvariable=self.datosPixel, anchor=tk.W)
 
         #Etiquetas de datos
-        self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos)
+        self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos,bg="lightgrey",cursor="arrow",font=("", 7), textvariable=self.datosPixel, anchor=tk.E)
         self.datosPixel = tk.StringVar()
         self.datosPixel.set("Lon:--, Lat:--, x:--, y:--")
-        self.EtiquetaDeDatos.config(bg="lightgrey",cursor="arrow",font=("", 7), textvariable=self.datosPixel, anchor=tk.E)
 
         #Rutas
         path = os.path.dirname(__file__)
@@ -152,19 +129,14 @@ class FrmImagen(tk.Frame):
         path = os.path.join(path,"img/iconos")
         #Boton RGB
         self.modoDeColoracion = "rgb"
-        self.btnRGB = tk.Button(self.BarraDeDatos)
-        self.btnRGB.config(text="RGB", font=("Consolas", 7, "bold"), fg="white" ,bg="gray40",relief="sunken",cursor="arrow",command=self.cambiarArgb)
-
+        self.btnRGB = tk.Button(self.BarraDeDatos,text="RGB", font=("Consolas", 7, "bold"), fg="white" ,bg="gray40",relief="sunken",cursor="arrow",command=self.cambiarArgb)
         #Boton FC
-        self.btnFC = tk.Button(self.BarraDeDatos)
-        self.btnFC.config(text="FC",font=("Consolas", 7, "bold"), bg="gray92", relief="raised",cursor="arrow",command=self.cambiarAfc)
+        self.btnFC = tk.Button(self.BarraDeDatos,text="FC",font=("Consolas", 7, "bold"), bg="gray92", relief="raised",cursor="arrow",command=self.cambiarAfc)
 
         #Modos de iluminacion
         self.modoIluminacion = 12 if self.gestorArchivos.getTipoImgBruta()=="SEN2" else 14
-        icono = Image.open(os.path.join(path,"sol1.png")).resize((14,14))
-        self.iconIluminacion = ImageTk.PhotoImage(icono)
-        self.btnIluminacion = tk.Button(self.BarraDeDatos)
-        self.btnIluminacion.config(image=self.iconIluminacion, bg="gray92", relief="raised",cursor="arrow",command=self.cambiarModoIluminacion)
+        self.iconIluminacion = ImageTk.PhotoImage(Image.open(os.path.join(path,"sol1.png")).resize((14,14)))
+        self.btnIluminacion = tk.Button(self.BarraDeDatos,image=self.iconIluminacion, bg="gray92", relief="raised",cursor="arrow",command=self.cambiarModoIluminacion)
         
         self.EtiquetaDeNombre.place(relx=0, rely=0,relwidth=0.3,relheight=1)
         if self.nombre == "FrameImagen1":         
@@ -177,8 +149,7 @@ class FrmImagen(tk.Frame):
 
     def createCuadroClasificador(self,area):  
         self.EtiquetaDeNombre.place_forget()
-        self.cuadroClasificador = tk.Frame(self.BarraDeDatos)
-        self.cuadroClasificador.config(bg="lightgrey",relief=None)
+        self.cuadroClasificador = tk.Frame(self.BarraDeDatos,bg="lightgrey",relief=None)
         self.cuadroClasificador.place(relx=0, rely=0,relwidth=0.3,relheight=1)
 
         self.tipoDeSeleccion = tk.IntVar()
@@ -198,39 +169,37 @@ class FrmImagen(tk.Frame):
         tk.Label(self.cuadroClasificador,text="F+",bg="lightgrey").place(relx=0.82, rely=0,relwidth=0.15,relheight=1)
 
 ##Funcionalidades##
-    def ocultarCuadroClasificador(self):
-        self.cuadroClasificador.destroy()
-    def mostrarBarraSelecciones(self):
-        self.BarraSelecciones.grid(column=0,row=0,sticky="ne")
-    def ocultarBarraSelecciones(self):
-        self.BarraSelecciones.grid_forget()
     def cambioDeTipo(self,*args):
         self.color,choose = self.controller.colorearArea(self.Areas[self.areaModificada],self.tipoDeSeleccion.get())
         for vertice in self.vertices:
             vertice.set_facecolor(self.color)
             vertice.set_edgecolor(self.color)
-        self.canvas.draw()
         self.controller.modificarChooseTabla(self.nombre,self.areaModificada,choose)
+        self.canvas.draw()
+    
+    def ajustarLimites(self,limX,limY):
+        self.ax.set_xlim(limX)
+        self.ax.set_ylim(limY) 
+
     #Abre una imagen
     def AbrirImagen(self):
         filename = self.gestorArchivos.abrirImagen(self.nombre)
         if filename:
-            self.lbImagen.grid_forget()
-            self.btnAbrirImagen.grid_forget()
+            self.lbImagen.destroy()
+            self.btnAbrirImagen.destroy()
             self.contenedorImage.grid_forget()
-            self.contenedorImage.place(relx=0,rely=0,relwidth=1,relheight=0.935)
             ##Abre imagen##
             self.image = Image.open(filename)
             self.anchoImagen, self.altoImagen = self.image.size
             self.cargarImagen()
+            self.contenedorImage.place(relx=0,rely=0,relwidth=1,relheight=0.935) 
             # Abrir la imagen con rasterio
             with rasterio.open(filename) as src:
-                self.transform = src.transform
-                self.crs = src.crs
+                self.src = src
             #Crea elementos para trabajar la imagen
             self.ImagenCargada=True        
             self.createBarraSelecciones()
-            self.createBarraDeDatos(self.gestorArchivos.getNombreImg(self.nombre))        
+            self.createBarraDeDatos(self.gestorArchivos.getNombreImg(self.nombre))
             self.handTool()
     def cargarImagen(self,conservarSize=False):
         if conservarSize:
@@ -239,18 +208,15 @@ class FrmImagen(tk.Frame):
         else:
             limX = (0,self.anchoImagen)
             limY = (self.altoImagen,0)
-        
         if hasattr(self, 'canvas'):
             self.canvas_widget.destroy()
-
         ##Configuracion de figura de mathplotlib##
         self.fig = Figure()
         self.ax = self.fig.add_subplot(111)
         self.ax.set_adjustable("datalim")
         self.ax.set_position([0, 0, 1, 1])
         self.ax.imshow(self.image)
-        self.ax.set_xlim(limX)
-        self.ax.set_ylim(limY)  
+        self.ajustarLimites(limX,limY)
         ## Crear un lienzo de Matplotlib en el frame##
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.contenedorImage)
         self.canvas_widget = self.canvas.get_tk_widget()
@@ -260,18 +226,14 @@ class FrmImagen(tk.Frame):
 
     def CoordenadasImagen(self, event):
         # Obtener las coordenadas locales del puntero
-        self.x = round(event.xdata) if event.xdata is not None  else None
-        self.y = round(event.ydata) if event.ydata is not None else None
-
-        #Obtiene el valor del pixel
-        if self.nombre== "FrameImagen2" and self.x is not None and self.y is not None:
-            if self.x >=0 and self.x<self.anchoImagen and self.y >=0 and self.y<self.altoImagen:    
-                self.value = round(self.image.getpixel((self.x,self.y)))
+        self.x = round(event.xdata) if event.xdata is not None  else exit
+        self.y = round(event.ydata) if event.ydata is not None else exit
+        #Obtiene las coordenadas geograficas del pixel
+        coord = self.consultarCoord(self.x,self.y)
+        if self.nombre== "FrameImagen2" and self.x >=0 and self.x<self.anchoImagen and self.y >=0 and self.y<self.altoImagen:    
+            self.value = round(self.image.getpixel((self.x,self.y)))
         else:
             self.value = 0
-        #Obtiene las coordenadas geograficas del pixel
-        if not self.x is None and not self.y is None:
-            coord = self.consultarCoord(self.x,self.y)
         # Mostrar las coordenadas en la consola
         if self.nombre== "FrameImagen1":
             self.datosPixel.set(f"Lat:{coord[0]}, Lon:{coord[1]}, x:{self.x}, y:{self.y}")
@@ -282,8 +244,8 @@ class FrmImagen(tk.Frame):
         if self.modificandoArea:
             self.modificarArea()
     def consultarCoord(self,x,y):
-        lon, lat = self.transform * (x,y)
-        if self.crs == "EPSG:32616":
+        lon, lat = self.src.transform * (x,y)
+        if self.src.crs == "EPSG:32616":
             transformer = Transformer.from_crs('epsg:32616', 'epsg:4326')
             lon, lat = transformer.transform(lon, lat)
         return (round(lat,6),round(lon,6))
@@ -302,8 +264,7 @@ class FrmImagen(tk.Frame):
         x, y = self.x, self.y
         limX = (x - (x - self.ax.get_xlim()[0]) * zoom_factor, x + (self.ax.get_xlim()[1] - x) * zoom_factor)
         limY = (y - (y - self.ax.get_ylim()[0]) * zoom_factor, y + (self.ax.get_ylim()[1] - y) * zoom_factor)
-        self.ax.set_xlim(limX)
-        self.ax.set_ylim(limY)
+        self.ajustarLimites(limX,limY)
         if self.sincronizar:
             self.controller.ajustarVista(self.nombre,limX,limY)
         self.canvas.draw()
@@ -312,15 +273,13 @@ class FrmImagen(tk.Frame):
         x1, y1 = self.pointersArea[0]
         x = (x1,x2) if x1 < x2 else (x2,x1)
         y = (y2,y1) if y1 < y2 else (y1,y2)
-        self.ax.set_xlim(x)
-        self.ax.set_ylim(y)
+        self.ajustarLimites(x,y)
         self.cancelarContruccionArea()
         self.canvas.draw()
     ### Fin de funciones Zoom ###
 
     def ajustarVista(self):
-        self.ax.set_xlim(0,self.anchoImagen)
-        self.ax.set_ylim(self.altoImagen, 0)
+        self.ajustarLimites((0,self.anchoImagen),(self.altoImagen, 0))
         if self.sincronizar:
             self.controller.aplicarAjuste(self.nombre)
         self.canvas.draw()
@@ -328,20 +287,20 @@ class FrmImagen(tk.Frame):
     def click(self, event):
         self.x= event.x
         self.y= event.y
-        
-    def arrastre(self, event):   
-        x= event.x
-        y= event.y
-        factor_x = (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])/self.canvas.get_width_height()[0]
-        factor_y = (self.ax.get_ylim()[0] - self.ax.get_ylim()[1])/self.canvas.get_width_height()[1]
-        limX=(self.ax.get_xlim()[0]-((x - self.x)*factor_x) ,self.ax.get_xlim()[1]-((x - self.x)*factor_x))
-        limY=(self.ax.get_ylim()[0]-((y - self.y)*factor_y) ,self.ax.get_ylim()[1]-((y - self.y)*factor_y))
-        self.ax.set_xlim(limX)
-        self.ax.set_ylim(limY)
-        self.x= x
-        self.y= y
+
+    def arrastre(self, event):
+        xy = event.x, event.y
+        xlim = self.ax.get_xlim()
+        ylim = self.ax.get_ylim()
+        canvas_width, canvas_height = self.canvas.get_width_height()
+        factor_xy = ((xlim[1] - xlim[0]) / canvas_width,(ylim[0] - ylim[1]) / canvas_height) 
+        delta_xy = (xy[0] - self.x,xy[1] - self.y)
+        limX = (xlim[0] - delta_xy[0] * factor_xy[0], xlim[1] - delta_xy[0] * factor_xy[0])
+        limY = (ylim[0] - delta_xy[1] * factor_xy[1], ylim[1] - delta_xy[1] * factor_xy[1])
+        self.ajustarLimites(limX, limY)
+        self.x, self.y = xy
         if self.sincronizar:
-            self.controller.ajustarVista(self.nombre,limX,limY)
+            self.controller.ajustarVista(self.nombre, limX, limY)
         self.canvas.draw()
     
     def trazarSeleccion(self,event,x=None,y=None):
@@ -349,9 +308,9 @@ class FrmImagen(tk.Frame):
             self.rectRelleno.remove()
         if self.rectContorno is not None:
             self.rectContorno.remove()
-        factor_x = (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])*0.05
-        factor_y = (self.ax.get_ylim()[0] - self.ax.get_ylim()[1])*0.05
-        factor = factor_x if factor_x < factor_y else factor_y
+        xlim = self.ax.get_xlim()
+        ylim = self.ax.get_ylim()
+        factor = min((xlim[1] - xlim[0]) * 0.05, (ylim[0] - ylim[1]) * 0.05)
         factor = factor if factor > 1 else 0.5
         x1 = (self.x) - factor
         y1 = (self.y) - factor
@@ -366,17 +325,15 @@ class FrmImagen(tk.Frame):
         self.idDraw_Event=self.canvas.mpl_connect('draw_event',self.ajustarContornoDeSeleccion)
         
     def ajustarContornoDeSeleccion(self,event):
-        if self.rectContorno is not None:
-            self.rectContorno.remove()
-            factor_x = (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])*0.05
-            factor_y = (self.ax.get_ylim()[0] - self.ax.get_ylim()[1])*0.05
-
-            factor = factor_x if factor_x < factor_y else factor_y
-            factor = factor if factor > 1 else 0.5
-            x = (self.rectRelleno.get_x()+0.5) - factor
-            y = (self.rectRelleno.get_y()+0.5)  - factor
-            self.rectContorno = patches.Rectangle((x, y), factor*2, factor*2, linewidth=1, edgecolor='r',fc='none')
-            self.ax.add_patch(self.rectContorno)
+        self.rectContorno.remove()
+        xlim = self.ax.get_xlim()
+        ylim = self.ax.get_ylim()
+        factor = min((xlim[1] - xlim[0]) * 0.05, (ylim[0] - ylim[1]) * 0.05)
+        factor = factor if factor > 1 else 0.5
+        x = (self.rectRelleno.get_x()+0.5) - factor
+        y = (self.rectRelleno.get_y()+0.5)  - factor
+        self.rectContorno = patches.Rectangle((x, y), factor*2, factor*2, linewidth=1, edgecolor='r',fc='none')
+        self.ax.add_patch(self.rectContorno)
 
     def eliminarSeleccion(self,event):    
         if self.rectContorno is not None:
@@ -391,10 +348,8 @@ class FrmImagen(tk.Frame):
  #Creacion de Areas#
     def iniciarConstruccionArea(self,event):
         if not self.trazandoArea:
-            x = round(self.x)
-            y = round(self.y)
-            self.pointersArea.append((x,y))
-            self.canvas.draw()
+            xy=(self.x,self.y)
+            self.pointersArea.append(xy)
             self.trazandoArea = True
             if self.herramientaSeleccionada == "ZoomMas":
                 self.canvas_widget.unbind("<ButtonPress-1>")
@@ -404,21 +359,17 @@ class FrmImagen(tk.Frame):
         else:
             self.trazandoArea = False
             if self.herramientaSeleccionada == "ZoomMas":
-                self.canvas_widget.unbind("<ButtonPress-1>")
-                self.canvas_widget.unbind("<ButtonPress-3>")
-                self.canvas_widget.bind("<ButtonPress-1>", self.zoomMas)
-                self.canvas_widget.bind("<ButtonPress-3>", self.iniciarConstruccionArea)
+                self.activarHerramienta(self.herramientaSeleccionada)
                 self.zoomManual()
             else:
                 self.construirArea()
 
     def actualizarAreaDeConstruccion(self):
-        x2 = round(self.x)
-        y2 = round(self.y)
-        x1, y1 = self.pointersArea[0]
+        xy2 =self.x,self.y
+        xy1 = self.pointersArea[0]
         if self.area is not None:
             self.area.remove()
-        self.area = patches.Polygon([(x1,y1),(x1,y2),(x2,y2),(x2,y1)], closed=True, edgecolor='dimgrey', facecolor='white', alpha=0.5, linestyle='dashed',linewidth=2)
+        self.area = patches.Polygon([xy1,(xy1[0],xy2[1]),xy2,(xy2[0],xy1[1])], closed=True, edgecolor='dimgrey', facecolor='white', alpha=0.5, linestyle='dashed',linewidth=2)
         self.ax.add_patch(self.area)
         self.canvas.draw()
 
@@ -458,10 +409,7 @@ class FrmImagen(tk.Frame):
 
     def cancelarContruccionArea(self,event=None):
         if self.herramientaSeleccionada == "ZoomMas":
-                self.canvas_widget.unbind("<ButtonPress-1>")
-                self.canvas_widget.unbind("<ButtonPress-3>")
-                self.canvas_widget.bind("<ButtonPress-1>", self.zoomMas)
-                self.canvas_widget.bind("<ButtonPress-3>", self.iniciarConstruccionArea)
+                self.activarHerramienta(self.herramientaSeleccionada)
         self.trazandoArea =False
         if self.area is not None:
             self.area.remove()
@@ -497,7 +445,7 @@ class FrmImagen(tk.Frame):
         self.desactivarModoEdicion()
 
     def modificarArea(self):
-        x,y = round(self.x),(self.y)
+        x,y = self.x,self.y
         puntos = self.Areas[self.areaModificada].get_xy()
         xmin, ymin= round(puntos[0][0]),round(puntos[0][1])
         xmax, ymax= round(puntos[2][0]),round(puntos[2][1])
@@ -558,7 +506,7 @@ class FrmImagen(tk.Frame):
         self.areaModificada = 0
         self.canvas_widget.unbind("<ButtonPress-1>")
         self.activarHerramienta("Area")
-        self.cuadroClasificador.place_forget()
+        self.cuadroClasificador.destroy()
         self.EtiquetaDeNombre.place(relx=0, rely=0,relwidth=0.3,relheight=1)
         self.controller.desactivarSelecciones(True)
 
@@ -664,7 +612,7 @@ class FrmImagen(tk.Frame):
                 self.canvas_widget.unbind("<B1-Motion>")
                 self.btnHand.config(bg="gray92", relief="raised")
             case "ZoomMas":
-                self.canvas_widget.unbind("<ButtonRelease-1>")
+                self.canvas_widget.unbind("<ButtonPress-1>")
                 self.canvas_widget.unbind("<ButtonPress-3>")
                 self.canvas_widget.unbind("<Escape>")    
                 self.btnAumentoZoom.config(bg="gray92", relief="raised")

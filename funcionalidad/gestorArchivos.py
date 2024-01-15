@@ -238,7 +238,7 @@ class GestorArchivos:
         app = tk.Toplevel()   
         app.title("Acerca de...")
         app.geometry("300x300")
-        #app.resizable(width=False, height=False)
+        app.resizable(width=False, height=False)
         app.iconbitmap("img/iconos/icon.ico")
         for i in range(0,8):
             app.rowconfigure(i,weight=1)
