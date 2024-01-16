@@ -119,8 +119,8 @@ class FrmImagen(tk.Frame):
         self.EtiquetaDeNombre = tk.Label(self.BarraDeDatos,bg="lightgrey",cursor="arrow",font=("", 7), textvariable=self.datosPixel, anchor=tk.W)
 
         #Etiquetas de datos
-        self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos,bg="lightgrey",cursor="arrow",font=("", 7), textvariable=self.datosPixel, anchor=tk.E)
         self.datosPixel = tk.StringVar()
+        self.EtiquetaDeDatos = tk.Label(self.BarraDeDatos,bg="lightgrey",cursor="arrow",font=("", 7), textvariable=self.datosPixel, anchor=tk.E)
         self.datosPixel.set("Lon:--, Lat:--, x:--, y:--")
 
         #Rutas
